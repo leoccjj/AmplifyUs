@@ -18,14 +18,12 @@ var routes = require('./routes');
 var app = module.exports = express();
 
 app.set('port', process.env.PORT || 6000);
-app.set('views', __dirname + '/views');
+app.set('views', __dirname + 'client/views');
 app.set('view engine', 'jade');
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
 app.use(express.methodOverride());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'uploads/screenshots')));
+app.use(express.static(path.join(__dirname, 'client')));
 app.use(app.router);
 
 app.set('view options', {debug: true});
