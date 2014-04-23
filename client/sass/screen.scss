@@ -1,0 +1,30 @@
+@import "compass/reset";
+@import "compass/css3";
+
+* {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+} 
+
+::-webkit-scrollbar { 
+	display: none; 
+}
+
+a {
+
+	text-decoration: none;
+	border-bottom: none; 
+
+	&:hover {
+
+	}
+
+	&:active {
+
+	}
+	
+}
