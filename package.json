@@ -21,7 +21,7 @@
     "time-grunt": "~0.2.7",
     "moment": "~2.5.1",
     "async": "~0.2.10",
-    "express": "*",
+    "express": "~3.2.6",
     "jade": "*",
     "underscore": "*",
     "colors": "*",
