@@ -17,8 +17,8 @@ var routes = require('./routes');
 
 var app = module.exports = express();
 
-app.set('port', process.env.PORT || 6000);
-app.set('views', __dirname + 'client/views');
+app.set('port', process.env.PORT || 6005);
+app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
@@ -154,7 +154,7 @@ Amplifier.prototype.setupOSC = function(options) {
 Amplifier.prototype.setupWebserver = function() {
 
 	// What current directory are we in?
-	console.log("Public Dir: ", path.join(__dirname, 'public'));
+	console.log("Public Dir: ", path.join(__dirname, 'client'));
 
 	http.createServer(app).listen(app.get('port'), function () {
 		console.log('Amplifier App istening on port ' + app.get('port'));
