@@ -4,10 +4,44 @@ var _ = require('underscore');
 var util = require('./utilities');
 var express = require('express')
 var colors = require('colors'); 
+var path = require('path');
 
 // Protocols
 var ws = require('ws');
-var osc = require('node-osc');       
+var osc = require('node-osc');  
+
+var routes = require('./routes');    
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var app = module.exports = express();
+
+app.set('port', process.env.PORT || 6000);
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
+app.use(express.logger('dev'));
+app.use(express.bodyParser());
+app.use(express.methodOverride());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, 'uploads/screenshots')));
+app.use(app.router);
+
+app.set('view options', {debug: true});
+app.locals.pretty = true; // Express 3.x
+app.locals.doctype = 'html'; // Express 3.x
+app.locals.layout = false; // Cruft from Express 2.x
+app.use(express.logger('dev'));
+app.use(express.bodyParser());
+app.use(express.cookieParser());
+app.use(express.errorHandler()); // Dev/Debug Helper 
+
+app.get('/', routes.index);
+app.get('/partials/:name', routes.partials);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 function Amplifier(options) {
 
@@ -20,16 +54,12 @@ function Amplifier(options) {
 	this.options.ws.host = this.options.ws.host || '127.0.0.1';
 	this.options.ws.port = this.options.ws.post || 4005;
 
-	this.options.server = this.options.server || {};
-	this.options.server.port = this.options.server.port || 6000;
-
 	this.options.osc = this.options.osc || {};
 	this.options.osc.inputPort = 9000;
 	this.options.osc.outputPort = 10000;
 
-	// Set up the two basic servers 
-	this.setupWebserver(this.options.server);
 	this.setupWebsocket(this.options.ws);
+	this.setupWebserver(); 
 
 	// Configure OSC if available
 	if (this.options.osc) this.setupOSC(this.options.osc);
@@ -123,17 +153,14 @@ Amplifier.prototype.setupOSC = function(options) {
 
 }; 
 
-Amplifier.prototype.setupWebserver = function(options) {
+Amplifier.prototype.setupWebserver = function() {
 
-	var expressApp = express();
-	expressApp.use(express.static(__dirname + '/admin'));
-	expressApp.listen(options.port); 
+	// What current directory are we in?
+	console.log("Public Dir: ", path.join(__dirname, 'public'));
 
-	expressApp.get('/', function (req, res) {
-		res.render('index.html'); 
+	http.createServer(app).listen(app.get('port'), function () {
+		console.log('Amplifier App istening on port ' + app.get('port'));
 	});
-
-	console.log('[Web Interface - Listening]: '.magenta, options);
 
 }
 
