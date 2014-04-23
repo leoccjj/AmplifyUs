@@ -10,6 +10,7 @@
   "engines": {
     "node": ">=0.8"
   },
+  "private": true,
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-contrib-clean": "~0.5.0",
@@ -17,6 +18,17 @@
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-sass": "*",
     "load-grunt-tasks": "~0.2.1",
-    "time-grunt": "~0.2.7"
+    "time-grunt": "~0.2.7",
+    "moment": "~2.5.1",
+    "async": "~0.2.10",
+    "express": "*",
+    "jade": "*",
+    "underscore": "*",
+    "colors": "*",
+    "ws": "*", 
+    "osc4node": "*",
+    "serialport": "*",
+    "midi": "*",
+    "dmx": "*"
   }
 }
