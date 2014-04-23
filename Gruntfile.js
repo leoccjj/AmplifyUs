@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 
     watch: {
       assemble: {
-        files: ['{content,data,templates,sass}/{,*/}*.{md,hbs,yml,scss}'],
+        files: ['client/{content,data,templates,sass}/{,*/}*.{md,hbs,yml,scss}'],
         tasks: ['sass']
       }
     },
@@ -28,7 +28,7 @@ module.exports = function(grunt) {
           compass: true, 
         },
         files: {
-          'stylesheets/screen.css': 'sass/screen.scss',       // 'destination': 'source'
+          'client/stylesheets/screen.css': 'client/sass/screen.scss',       // 'destination': 'source'
         }
       }
     }, 
