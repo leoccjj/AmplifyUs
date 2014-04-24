@@ -4,23 +4,23 @@
 		li(ng-click="showMenu = !showMenu;")
 			.icon.back-icon
 				i.fa.fa-chevron-down
-		li()
+		li(ng-click="go('/overview')")
 			.icon
 				i.fa.fa-circle
 			.title Overview
-		li()
+		li(ng-click="go('/sound')")
 			.icon
 				i.fa.fa-circle
 			.title Sound
-		li()
+		li(ng-click="go('/light')")
 			.icon
 				i.fa.fa-circle
 			.title Light
-		li()
+		li(ng-click="go('/nodes')")
 			.icon
 				i.fa.fa-circle
 			.title Nodes
-		li()
+		li(ng-click="go('/settings')")
 			.icon
 				i.fa.fa-circle
 			.title Settings
