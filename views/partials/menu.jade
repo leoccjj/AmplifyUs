@@ -1,9 +1,9 @@
 .side-menu(ng-class="{'closed' : showMenu}", ).clearfix
 	
 	ul.menu-list() 
-		li()
+		li(ng-click="showMenu = !showMenu;")
 			.icon.back-icon
-				i.fa.fa-chevron-left
+				i.fa.fa-chevron-down
 		li()
 			.icon
 				i.fa.fa-circle

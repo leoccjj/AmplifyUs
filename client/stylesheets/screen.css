@@ -95,7 +95,7 @@ a {
   text-align: center;
   top: 0;
   width: 100%;
-  z-index: 10001;
+  z-index: 10;
 }
 .topbar .logo-wrap {
   margin: 6px auto 0;
@@ -121,19 +121,21 @@ a {
   background-color: #1f212f;
   float: left;
   position: absolute;
-  top: 36px;
-  transition: width 0.2s ease 0s;
+  top: 0px;
+  transition: all 0.2s ease 0s;
   width: 270px;
+  z-index: 100;
+  height: 100%;
 }
 .side-menu.closed {
-  height: 100%;
-  width: 0;
+  height: 36px;
+  overflow: hidden;
 }
 
 .menu-list {
   margin: 0;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding-bottom: 1px;
   padding-left: 0;
   transition: height 0.2s ease 0s;
@@ -146,7 +148,7 @@ a {
   cursor: pointer;
   position: relative;
   width: 100%;
-  height: 40px;
+  height: 36px;
 }
 .menu-list li:hover {
   background-color: #0f0f1e;
@@ -166,7 +168,8 @@ a {
   color: #00AAFF;
 }
 .menu-list li .icon.back-icon {
-  right: 0px;
+  text-align: center;
+  left: 117px;
 }
 .menu-list li .title {
   color: #FFFFFF;
