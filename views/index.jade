@@ -2,9 +2,15 @@ extends layout
 
 block body
 
-	div(ng-controller="AppController")
-		div(ui-view)
-			
+	.topbar
+
+		.logo-wrap
+			span.logo Amplifier
+
+	div(ng-controller="MenuController", menu-container)
+
+	div(ng-controller="AppController", ng-view)
+
 	script(src="lib/jquery-2.0.3.min.js")
 	script(src="lib/modernizr-2.6.2.min.js")
 	script(src="lib/spin.min.js")
@@ -16,6 +22,7 @@ block body
 	script(src='lib/angular/angular-resource.js')
 	script(src='lib/angular/angular-animate.min.js')
 	script(src='lib/angular/angular-ui-router.min.js')
+	script(src='lib/angular/angular-touch.min.js')
 
 	// Utility
 	script(src="lib/underscore-min.js")

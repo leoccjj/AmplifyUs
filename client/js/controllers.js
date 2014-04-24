@@ -8,6 +8,21 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 	function($q, $rootScope, $scope, $location, api) {
 
+		$scope.showMenu = true;
+		
+		$scope.go = function (path) {
+			$location.path(path);
+		}
+
+
+	}
+
+]);
+
+appControllers.controller('MenuController', ['$q', '$rootScope', '$scope', '$location', 'api', 
+
+	function($q, $rootScope, $scope, $location, api) {
+
 		$scope.go = function (path) {
 			$location.path(path);
 		}
