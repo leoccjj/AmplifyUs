@@ -191,3 +191,11 @@ a {
   padding: 24px;
   position: absolute;
 }
+
+.color-visualizer {
+  width: 100%;
+}
+.color-visualizer .color-box {
+  width: 25%;
+  height: 192px;
+}

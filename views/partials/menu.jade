@@ -1,7 +1,7 @@
-.side-menu(ng-class="{'closed' : showMenu}", ).clearfix
+.side-menu(ng-class="{'closed' : !rootScope.showMenu}", ).clearfix
 	
 	ul.menu-list() 
-		li(ng-click="showMenu = !showMenu;")
+		li(ng-click="rootScope.showMenu = !rootScope.showMenu;")
 			.icon.back-icon
 				i.fa.fa-chevron-down
 		li(ng-click="go('/overview')")

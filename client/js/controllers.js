@@ -8,16 +8,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 	function($q, $rootScope, $scope, $location, api) {
 
-		$scope.showMenu = true;
-
 		$scope.go = function (path) {
+			$rootScope.showMenu = true; 
 			$location.path(path);
 		}
-
-		$scope.$watch('showMenu', function(newValue, oldValue) { 
-			console.log(newValue); 
-		});
-
 
 	}
 
