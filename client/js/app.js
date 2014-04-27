@@ -33,13 +33,3 @@ module.factory('api', function($resource, $http){
 	}
 
 });
-
-module.directive('menuContainer', function() {
-
-  return {
-      restrict: 'AE',
-      replace: 'true',
-      templateUrl: 'partials/menu'
-  };
-
-});

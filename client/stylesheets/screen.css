@@ -190,12 +190,16 @@ a {
   top: 36px;
   padding: 24px;
   position: absolute;
+  width: 100%;
 }
 
 .color-visualizer {
   width: 100%;
 }
 .color-visualizer .color-box {
-  width: 25%;
-  height: 192px;
+  min-width: 24%;
+  min-height: 192px;
+  background-color: #000000;
+  display: inline-block;
+  border: 1px solid orange;
 }
