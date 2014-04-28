@@ -24,12 +24,6 @@ module.factory('api', function($resource, $http){
 
 		}, 
 
-		capturePhoto: function(callback) {
-
-			this.sendMessage("");
-
-		}, 
-
 	}
 
 });

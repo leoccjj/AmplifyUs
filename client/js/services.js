@@ -76,14 +76,12 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 		reconnect('websocket closed');
 	};
 
-	var send = function() {
-		ws.send(JSON.stringify(msg_for_server));
+	var send = function(args) {
+		ws.send(JSON.stringify(args));
 	}; 
 
 	// Processing Updates from Server
 	var onmessage = function(newMessageFromServer) {
-
-		stop_waiting();
 
 		// TODO put these back in for deployment
 		console.log('websocket message', newMessageFromServer);
@@ -105,6 +103,7 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 	return {
 		on: on,
 		connect: connect,
+		send: send, 
 		// update_pins: update_pins,
 	};
 

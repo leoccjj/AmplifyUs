@@ -26,6 +26,7 @@
 
 body {
 	font-family: 'Open Sans', 'sans-serif';
+	background: #c8c8c8; 
 }
 
 a {
@@ -42,6 +43,30 @@ a {
 	}
 	
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+svg {
+  font: 10px sans-serif;
+}
+ 
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5px;
+}
+ 
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+ 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 .topbar {
 
@@ -173,13 +198,17 @@ a {
 .color-visualizer {
 
 	width: 100%; 
+	line-height: 0px;
+	margin: 0;
+	padding: 0; 
 
 	.color-box {
-		min-width: 24%;
+		margin: 0;
+		padding: 0; 
+		min-width: 24.79%;
 		min-height: 192px;
 		background-color: #000000; 
 		display: inline-block; 
-		border: 1px solid orange; 
 	}
 
 }

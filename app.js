@@ -5,8 +5,8 @@ var util = require('./utilities');
 var express = require('express')
 var colors = require('colors'); 
 var path = require('path');
+var moment = require('moment');
 
-// Protocols
 var ws = require('ws');
 var osc = require('node-osc');  
 
@@ -14,6 +14,12 @@ var routes = require('./routes');
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+moment().format();
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 var app = module.exports = express();
 
@@ -89,10 +95,17 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			var newMessage = JSON.parse(message);
 
-			//console.log("Mouse X: ".yellow, newMessage.mouseX);
-			// console.log("Mouse Y: ".yellow, newMessage.mouseY);
+			if (newMessage.event == "touch") {
 
-			ws.send(JSON.stringify({message: "hello!"}));
+				var now = moment();
+
+				var logMessage = "Touch @ " + newMessage.group + " : " + now.format("dddd, MMMM Do YYYY, h:mm:ss a"); 
+				console.log(logMessage.yellow); 
+			}
+
+			// console.log("Mouse X: ".yellow, newMessage.mouseX);
+			// console.log("Mouse Y: ".yellow, newMessage.mouseY);
+			// ws.send(JSON.stringify({message: "hello!"}));
 
 		});
 

@@ -12,12 +12,18 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 	function($q, $rootScope, $scope, $location, api, wsserver) {
 
+		// {color:'red'}
+
         wsserver.connect(appConfig.wsURL);
 
 		$scope.go = function (path) {
 			$rootScope.showMenu = true; 
 			$location.path(path);
 		}
+
+		$scope.registerTouch = function(group) {
+			wsserver.send({event: "touch", group: group})
+		}; 
 
 	}
 
