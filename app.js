@@ -89,18 +89,25 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		console.log("[Websocket] // New Connection From: ".blue, newClient);
 
-		core.clientList.push({addr: newClient, connection: ws}); 
+		core.clientList.push({addr: newClient, connection: ws});
+
+		// console.log('Clients', core.clientList); 
+
+		startTicking(); 
 
 		ws.on('message', function(message, flags) {
 
 			var newMessage = JSON.parse(message);
 
-			if (newMessage.event == "touch") {
+			if (newMessage.event == "touchdown" || newMessage.event == "touchup") {
 
 				var now = moment();
 
-				var logMessage = "Touch @ " + newMessage.group + " : " + now.format("dddd, MMMM Do YYYY, h:mm:ss a"); 
+				var logMessage = "Touch @ " + newMessage.group + " : " + now.valueOf(); 
 				console.log(logMessage.yellow); 
+
+				ws.send(JSON.stringify({message: "hello!"}));
+
 			}
 
 			// console.log("Mouse X: ".yellow, newMessage.mouseX);
@@ -110,9 +117,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		});
 
 		ws.on('close', function() {
-
 			console.log("[Websocket Connection Closed]".red); 
-
 		});
 
 		ws.on('error', function(e) {
@@ -129,6 +134,21 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			}
 
 		};
+
+		function startTicking() {
+
+			var tick = {}; 
+
+			setInterval(function() {
+				tick.timestamp = moment().valueOf();
+				tick.value = util.random_float_normalized(); 
+				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
+					if(error) console.log(error); 
+				});
+			}, 500); 
+	
+
+		}; 
 
 	});
 

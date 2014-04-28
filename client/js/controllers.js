@@ -14,6 +14,13 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		// {color:'red'}
 
+		$scope.touchActivity = {}; 
+
+		wsserver.on('tick', function(args) {
+        	$scope.touchActivity = args; 
+        	// $scope.$apply(); 
+        }); 
+
         wsserver.connect(appConfig.wsURL);
 
 		$scope.go = function (path) {
@@ -21,9 +28,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			$location.path(path);
 		}
 
-		$scope.registerTouch = function(group) {
-			wsserver.send({event: "touch", group: group})
+		$scope.registerTouch = function(event, group) {
+			wsserver.send({event: event, group: group})
 		}; 
+
 
 	}
 

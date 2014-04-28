@@ -47,14 +47,12 @@ app.directive('touchChart', function () {
 
   return {
 
-	restrict: 'AE', // the directive can be invoked only by using <bar-chart></bar-chart> tag in the template
+	restrict: 'AE',
 	scope: { // attributes bound to the scope of the directive
-		val: '='
+		point: '='
 	},
 
     link: function (scope, element, attrs) {
-
-    	console.log('sup'); 
 
 		// initialization, done once per my-directive tag in template. If my-directive is within an
 		// ng-repeat-ed template then it will be called every time ngRepeat creates a new copy of the template.
@@ -90,23 +88,32 @@ app.directive('touchChart', function () {
 			.attr("d", line);
 
 		// whenever the bound 'exp' expression changes, execute this 
-		scope.$watch('val', function (newVal, oldVal) {
+		scope.$watch('point', function (newVal, oldVal) {
 
-			// push a new data point onto the back
-			data.push(random());
+			console.log("Damnit", newVal, oldVal); 
 
-			// redraw the line, and slide it to the left
-			path
-				.attr("d", line)
-				.attr("transform", null)
-				.transition()
-				.duration(500)
-				.ease("linear")
-				.attr("transform", "translate(" + x(-1) + ",0)")
-				.each("end", tick);
+			function tick() {
 
-			// pop the old data point off the front
-			data.shift();
+				// push a new data point onto the back
+				data.push(newVal.value);
+
+				// redraw the line, and slide it to the left
+				path
+					.attr("d", line)
+					.attr("transform", null)
+					.transition()
+					.duration(500)
+					.ease("linear")
+					.attr("transform", "translate(" + x(-1) + ",0)")
+					.each("end", tick);
+
+				// pop the old data point off the front
+				data.shift();
+
+			}
+
+			tick(); 
+
 
 
 		}, true);

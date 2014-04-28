@@ -87,6 +87,10 @@ a {
   border-bottom: none;
 }
 
+h3 {
+  font-size: 22px;
+}
+
 svg {
   font: 10px sans-serif;
 }
@@ -224,4 +228,12 @@ svg {
   min-height: 192px;
   background-color: #000000;
   display: inline-block;
+}
+
+.touches {
+  margin-top: 24px;
+}
+.touches svg {
+  margin-top: 8px;
+  border: 1px solid black;
 }

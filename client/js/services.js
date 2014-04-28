@@ -18,6 +18,7 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 		'websocket-opened': function() {}, // no args
 		'update': function() {},
 		'websocket-closed': function() {}, // no args
+		'tick': function () {}, 
 	};
 
 	var on = function(e, f) { // assign callback functions
@@ -29,6 +30,7 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 	};
 
 	var do_callback = function(e, arg) {
+		console.log(callbacks[e]); 
 		$rootScope.$apply(function() {
 			callbacks[e](arg);
 		});
@@ -84,19 +86,10 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 	var onmessage = function(newMessageFromServer) {
 
 		// TODO put these back in for deployment
-		console.log('websocket message', newMessageFromServer);
 		var data = JSON.parse(newMessageFromServer.data);
 		console.log('websocket data', data);
 
-		/*
-		do_callback('update', {
-			pins: pins,
-			connections: connections,
-			ssid: ssid,
-		});
-		*/ 
-
-		console.log('\n\n');
+		do_callback(data.name, data.event); 
 
 	};
 

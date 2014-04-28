@@ -1,5 +1,5 @@
 div.color-visualizer
-	div.color-box.area-one(ng-click="registerTouch(0);")
-	div.color-box.area-two(ng-click="registerTouch(1);")
-	div.color-box.area-three(ng-click="registerTouch(2);")
-	div.color-box.area-four(ng-click="registerTouch(3);")
+	div.color-box.area-one(ng-mousedown="registerTouch('touchdown', 0);", ng-mouseup="registerTouch('touchup', 0);")
+	div.color-box.area-two(ng-mousedown="registerTouch('touchdown', 1);", ng-mouseup="registerTouch('touchup', 1);")
+	div.color-box.area-three(ng-mousedown="registerTouch('touchdown', 2);", ng-mouseup="registerTouch('touchup', 2);")
+	div.color-box.area-four(ng-mousedown="registerTouch('touchdown', 3);", ng-mouseup="registerTouch('touchup', 3);")
