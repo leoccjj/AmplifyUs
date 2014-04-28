@@ -91,7 +91,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		core.clientList.push({addr: newClient, connection: ws});
 
-		// console.log('Clients', core.clientList); 
+		//console.log('Clients', core.clientList); 
 
 		startTicking(); 
 
@@ -145,7 +145,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					if(error) console.log(error); 
 				});
-			}, 500); 
+			}, 1000); 
 	
 
 		}; 

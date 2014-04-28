@@ -26,7 +26,7 @@ app.directive('touchChart', function () {
 
   // Define constants and helpers used for the directive
 	var n = 40,
-		random = d3.random.normal(0, .2),
+		random = d3.random.normal(0, 0),
 		data = d3.range(n).map(random);
 
 	var margin = {top: 20, right: 0, bottom: 20, left: 0},
@@ -90,14 +90,12 @@ app.directive('touchChart', function () {
 		// whenever the bound 'exp' expression changes, execute this 
 		scope.$watch('point', function (newVal, oldVal) {
 
-			console.log("Damnit", newVal, oldVal); 
+			// push a new data point onto the back
+			
+			if (newVal.value) {
 
-			function tick() {
-
-				// push a new data point onto the back
 				data.push(newVal.value);
 
-				// redraw the line, and slide it to the left
 				path
 					.attr("d", line)
 					.attr("transform", null)
@@ -105,16 +103,12 @@ app.directive('touchChart', function () {
 					.duration(500)
 					.ease("linear")
 					.attr("transform", "translate(" + x(-1) + ",0)")
-					.each("end", tick);
+					.each("end", this);
 
 				// pop the old data point off the front
 				data.shift();
 
 			}
-
-			tick(); 
-
-
 
 		}, true);
 
