@@ -25,10 +25,13 @@
     "jade": "*",
     "underscore": "*",
     "colors": "*",
-    "ws": "*", 
-   	"node-osc": "*",
+    "ws": "*",
+    "node-osc": "*",
     "serialport": "*",
     "midi": "*",
     "dmx": "*"
+  },
+  "dependencies": {
+    "CBuffer": "~0.1.4"
   }
 }

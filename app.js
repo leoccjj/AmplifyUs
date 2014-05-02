@@ -10,7 +10,9 @@ var moment = require('moment');
 var ws = require('ws');
 var osc = require('node-osc');  
 
-var routes = require('./routes');    
+var routes = require('./routes');   
+
+var buf = require('CBuffer'); 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,6 +45,11 @@ app.use(express.errorHandler()); // Dev/Debug Helper
 
 app.get('/', routes.index);
 app.get('/partials/:name', routes.partials);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var touchBuffer = new buf(48); 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +100,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		//console.log('Clients', core.clientList); 
 
-		startTicking(); 
+		// startTicking(); 
 
 		ws.on('message', function(message, flags) {
 
@@ -106,7 +113,30 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				var logMessage = "Touch @ " + newMessage.group + " : " + now.valueOf(); 
 				console.log(logMessage.yellow); 
 
-				ws.send(JSON.stringify({message: "hello!"}));
+				var tick = {}; 
+				tick.group = newMessage.group; 
+				tick.timestamp = moment().valueOf();
+
+				if (newMessage.event == "touchdown") {
+
+					tick.value = 1.0; 
+					ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
+						if(error) console.log(error); 
+					}); 
+
+					touchBuffer.push(tick);
+					console.log(touchBuffer); 
+
+
+				} else if (newMessage.event == "touchup") {
+
+					tick.value = 0.0001; 
+					ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
+						if(error) console.log(error); 
+					}); 
+
+				}
+
 
 			}
 
