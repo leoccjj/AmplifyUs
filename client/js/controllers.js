@@ -15,9 +15,13 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		// {color:'red'}
 
 		$scope.touchActivity = {}; 
+		$scope.meanOnsetDurations = 0; 
+		$scope.groupActivity = []; 
 
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
+        	$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
+        	$scope.groupActivity = args.groupActivity;
         	// $scope.$apply(); 
         }); 
 

@@ -30,7 +30,6 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 	};
 
 	var do_callback = function(e, arg) {
-		console.log(callbacks[e]); 
 		$rootScope.$apply(function() {
 			callbacks[e](arg);
 		});
@@ -87,7 +86,8 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 
 		// TODO put these back in for deployment
 		var data = JSON.parse(newMessageFromServer.data);
-		console.log('websocket data', data);
+		
+		// console.log('websocket data', data);
 
 		do_callback(data.name, data.event); 
 

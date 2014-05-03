@@ -226,8 +226,16 @@ svg {
   padding: 0;
   min-width: 24.79%;
   min-height: 192px;
-  background-color: #000000;
   display: inline-block;
+  border: 1px solid black;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+.color-visualizer .touch-indicator {
+  position: absolute;
+  top: 40px;
+  padding-left: 12px;
+  color: #f1f1f1;
 }
 
 .touches {

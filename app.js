@@ -59,7 +59,7 @@ var touchStatistics = {
 	addRate: 0.025, 
 
 	//  Inter-onset duration 
-	computeActivity: function() {
+	computeMeanInterOnsetDurations: function() {
 
 		var touchesInBuffer = 0; 
 		var interOnsetDuration = 0; 
@@ -80,6 +80,25 @@ var touchStatistics = {
 		var meanInterOnsetDuration = interOnsetDuration / touchesInBuffer; 
 
 		return meanInterOnsetDuration; 
+
+	}, 
+
+	computeGroupActivity: function() {
+
+		var groupActivity = [0, 0, 0, 0]
+
+		touchBuffer.forEach(function(item) {
+			groupActivity[item.group] += 1;  
+		}); 
+
+		// Turn to %
+		groupActivity = _.map(groupActivity, function(group) {
+			return parseInt((group / 48) * 100, 10); 
+		}); 
+
+		console.log(groupActivity); 
+
+		return groupActivity; 
 
 	}, 
 
@@ -223,8 +242,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				tick.timestamp = moment().valueOf();
 
 				tick.value = touchStatistics.decay();
-
-				console.log(tick.value);
+				tick.meanOnsetDuration = touchStatistics.computeMeanInterOnsetDurations(); 
+				tick.groupActivity = touchStatistics.computeGroupActivity(); 
 
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					if(error) console.error(error); 
