@@ -49,29 +49,13 @@ app.get('/partials/:name', routes.partials);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-var touchActivity = {
-
-	value: 0.0,
-
-	increase: function() {
-		if (this.value <= 1.0)
-			this.value += 0.020; 
-	},
-
-	decrease: function() {
-		if (this.value >= 0.0)
-			this.value -= 0.020; 
-	},
-
-	get: function() {
-		return this.value; 
-	}
-
-}
-
 var touchBuffer = new buf(48); 
 
 var touchStatistics = {
+
+	touchActivity: 0, 
+
+	decayRate: .0025, 
 
 	//  Inter-onset duration 
 	computeActivity: function() {
@@ -92,13 +76,31 @@ var touchStatistics = {
 
 		}); 
 
-		var meanDuration = interOnsetDuration / touchesInBuffer; 
+		var meanInterOnsetDuration = interOnsetDuration / touchesInBuffer; 
 
-		console.log(meanDuration);
-
-		return meanDuration; 
+		return meanInterOnsetDuration; 
 
 	}, 
+
+	normalizeActivity: function() {
+
+		var mean = this.computeActivity(); 
+
+		// about 100ms/20sec
+		var mappedVal = util.clamp(1 - (util.map(mean, 125, 2500, 0.0, 1.0)), 0.0, 1.0);
+
+		this.touchActivity = _.isNaN(mappedVal) ? 0 : mappedVal;  
+
+	},
+
+	decay: function() {
+
+		if ( (this.touchActivity - this.decayRate) > 0) 
+			this.touchActivity = this.touchActivity - this.decayRate;
+
+		return this.touchActivity; 
+
+	}
 
 }
 
@@ -170,13 +172,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				if (newMessage.event == "touchdown") {
 
-					tick.value = touchStatistics.computeActivity(); 
-					console.log(tick.value);
+					// console.log(tick.value);
 					//ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					//	if(error) console.log(error); 
 					//}); 
 
 					touchBuffer.push(tick);
+					touchStatistics.normalizeActivity(); 
 
 				} else if (newMessage.event == "touchup") {
 
@@ -217,11 +219,17 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			setInterval(function() {
 
+				// Add decay rate...
 				tick.timestamp = moment().valueOf();
 
+				tick.value = touchStatistics.decay();
+
+				console.log(tick.value);
+
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
-					if(error) console.log(error); 
+					if(error) console.error(error); 
 				});
+
 
 			}, 100); 
 	
