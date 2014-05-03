@@ -56,6 +56,7 @@ var touchStatistics = {
 	touchActivity: 0, 
 
 	decayRate: .0025, 
+	addRate: 0.025, 
 
 	//  Inter-onset duration 
 	computeActivity: function() {
@@ -82,21 +83,20 @@ var touchStatistics = {
 
 	}, 
 
-	normalizeActivity: function() {
+	add: function() {
 
-		var mean = this.computeActivity(); 
+		if ( (this.touchActivity + this.addRate) <= 1) 
+			this.touchActivity += this.addRate; 
 
-		// about 100ms/20sec
-		var mappedVal = util.clamp(1 - (util.map(mean, 125, 2500, 0.0, 1.0)), 0.0, 1.0);
-
-		this.touchActivity = _.isNaN(mappedVal) ? 0 : mappedVal;  
+		return this.touchActivity; 
 
 	},
 
 	decay: function() {
 
+		// Decay if nonzero 
 		if ( (this.touchActivity - this.decayRate) > 0) 
-			this.touchActivity = this.touchActivity - this.decayRate;
+			this.touchActivity -= this.decayRate;
 
 		return this.touchActivity; 
 
@@ -178,7 +178,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					//}); 
 
 					touchBuffer.push(tick);
-					touchStatistics.normalizeActivity(); 
+					touchStatistics.add(); 
 
 				} else if (newMessage.event == "touchup") {
 
