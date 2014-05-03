@@ -49,7 +49,58 @@ app.get('/partials/:name', routes.partials);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+var touchActivity = {
+
+	value: 0.0,
+
+	increase: function() {
+		if (this.value <= 1.0)
+			this.value += 0.020; 
+	},
+
+	decrease: function() {
+		if (this.value >= 0.0)
+			this.value -= 0.020; 
+	},
+
+	get: function() {
+		return this.value; 
+	}
+
+}
+
 var touchBuffer = new buf(48); 
+
+var touchStatistics = {
+
+	//  Inter-onset duration 
+	computeActivity: function() {
+
+		var touchesInBuffer = 0; 
+		var interOnsetDuration = 0; 
+
+		var tMinusOne = 0; 
+
+		touchBuffer.forEach(function(item) {
+
+			if (tMinusOne !== 0) 
+				interOnsetDuration += (item.timestamp - tMinusOne);
+
+			tMinusOne = item.timestamp; 
+
+			touchesInBuffer++; 
+
+		}); 
+
+		var meanDuration = interOnsetDuration / touchesInBuffer; 
+
+		console.log(meanDuration);
+
+		return meanDuration; 
+
+	}, 
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +151,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		//console.log('Clients', core.clientList); 
 
-		// startTicking(); 
+		startTicking(); 
 
 		ws.on('message', function(message, flags) {
 
@@ -119,30 +170,25 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				if (newMessage.event == "touchdown") {
 
-					tick.value = 1.0; 
-					ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
-						if(error) console.log(error); 
-					}); 
+					tick.value = touchStatistics.computeActivity(); 
+					console.log(tick.value);
+					//ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
+					//	if(error) console.log(error); 
+					//}); 
 
 					touchBuffer.push(tick);
-					console.log(touchBuffer); 
-
 
 				} else if (newMessage.event == "touchup") {
 
-					tick.value = 0.0001; 
-					ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
-						if(error) console.log(error); 
-					}); 
+					//tick.value = 0.0001; 
+					//ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
+					//	if(error) console.log(error); 
+					// }); 
 
 				}
 
 
 			}
-
-			// console.log("Mouse X: ".yellow, newMessage.mouseX);
-			// console.log("Mouse Y: ".yellow, newMessage.mouseY);
-			// ws.send(JSON.stringify({message: "hello!"}));
 
 		});
 
@@ -170,12 +216,14 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			var tick = {}; 
 
 			setInterval(function() {
+
 				tick.timestamp = moment().valueOf();
-				tick.value = util.random_float_normalized(); 
+
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					if(error) console.log(error); 
 				});
-			}, 1000); 
+
+			}, 100); 
 	
 
 		}; 
