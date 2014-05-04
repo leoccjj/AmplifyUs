@@ -85,7 +85,9 @@ app.directive('touchChart', function () {
 			.append("path")
 			.datum(data)
 			.attr("class", "line")
-			.attr("d", line);
+			.attr("d", line)
+			.style("stroke", "#0F0F1E")
+			.style("stroke-width", "3"); 
 
 		// whenever the bound 'exp' expression changes, execute this 
 		scope.$watch('point', function (newVal, oldVal) {

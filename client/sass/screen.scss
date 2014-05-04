@@ -210,7 +210,7 @@ svg {
 		margin: 0;
 		padding: 0; 
 		min-width: 24.79%;
-		min-height: 192px;
+		min-height: 92px;
 		display: inline-block; 
 		border: 1px solid black; 
 		background: rgba(0,0,0, 0.15); 
@@ -233,5 +233,7 @@ svg {
 	svg {
 		margin-top: 8px; 
 		border: 1px solid black; 
+		border-radius: 3px; 
+		background: rgba(0,0,0, 0.075); 
 	}
 }

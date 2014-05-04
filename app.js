@@ -121,7 +121,7 @@ var touchStatistics = {
 
 }
 
-var tickTimer; 
+var tickTimer = null; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,11 +166,14 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		var newClient = getClientAddress(ws); 
 
+		core.clientList = [];
+		clearInterval(tickTimer);
+
 		console.log("[Websocket] // New Connection From: ".blue, newClient);
 
 		core.clientList.push({addr: newClient, connection: ws});
 
-		console.log('Clients', core.clientList); 
+		// console.log('Clients', core.clientList); 
 
 		startTicking(); 
 
@@ -288,7 +291,7 @@ Amplifier.prototype.setupOSC = function(options) {
 
 		if (msg.arguments) {
 			for (var a = 0; a < msg.arguments.length; ++a) {
-				arguments.push( msg.arguments[a].value ); 
+				arguments.push( msg.arguments[a].value); 
 			}
 		}
 
