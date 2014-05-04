@@ -96,8 +96,6 @@ var touchStatistics = {
 			return parseInt((group / 48) * 100, 10); 
 		}); 
 
-		console.log(groupActivity); 
-
 		return groupActivity; 
 
 	}, 
@@ -122,6 +120,8 @@ var touchStatistics = {
 	}
 
 }
+
+var tickTimer; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		core.clientList.push({addr: newClient, connection: ws});
 
-		//console.log('Clients', core.clientList); 
+		console.log('Clients', core.clientList); 
 
 		startTicking(); 
 
@@ -214,7 +214,14 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		});
 
 		ws.on('close', function() {
+			
+			console.log('Clearing Tick Timer: '.red)
+			clearInterval(tickTimer);
+
+			// client.connection._socket._handle
+
 			console.log("[Websocket Connection Closed]".red); 
+
 		});
 
 		ws.on('error', function(e) {
@@ -236,7 +243,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			var tick = {}; 
 
-			setInterval(function() {
+			tickTimer = setInterval(function() {
 
 				// Add decay rate...
 				tick.timestamp = moment().valueOf();
