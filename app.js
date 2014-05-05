@@ -179,6 +179,22 @@ function Amplifier(options) {
 
 }
 
+Amplifier.prototype.handleTouches = function(touch) {
+
+	var now = moment();
+
+	var tick = {}; 
+	tick.group = touch.group; 
+	tick.timestamp = moment().valueOf();
+
+	touchBuffer.push(tick);
+	touchStatistics.add(); 
+
+	var logMessage = "Touch @ " + touch.group + " : " + now.valueOf(); 
+	console.log(logMessage.yellow); 
+
+}; 
+
 Amplifier.prototype.setupWebsocket = function(options) {
 
 	var core = this;
@@ -215,22 +231,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			if (newMessage.event == "touchdown" || newMessage.event == "touchup") {
 
-				var now = moment();
-
-				var logMessage = "Touch @ " + newMessage.group + " : " + now.valueOf(); 
-				console.log(logMessage.yellow); 
-
-				var tick = {}; 
-				tick.group = newMessage.group; 
-				tick.timestamp = moment().valueOf();
-
-				// Can also process touchup
-				if (newMessage.event == "touchdown") {
-
-					touchBuffer.push(tick);
-					touchStatistics.add(); 
-
-				} 
+				myAmplifier.handleTouches(newMessage); 
 
 			}
 
