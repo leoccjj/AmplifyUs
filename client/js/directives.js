@@ -29,7 +29,7 @@ app.directive('touchChart', function () {
 		random = d3.random.normal(0, 0),
 		data = d3.range(n).map(random);
 
-	var margin = {top: 20, right: 0, bottom: 20, left: 0},
+	var margin = {top: -2, right: 0, bottom: 20, left: 0},
 		width = 960 - margin.left - margin.right,
 		height = 200 - margin.top - margin.bottom;
 
@@ -87,7 +87,6 @@ app.directive('touchChart', function () {
 			.attr("class", "line")
 			.attr("d", line)
 			.style("stroke", "#0F0F1E")
-			.attr("transform", "translate(0, -2)")
 			.style("stroke-width", "3"); 
 
 		// whenever the bound 'exp' expression changes, execute this 

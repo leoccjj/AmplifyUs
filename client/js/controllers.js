@@ -2,11 +2,12 @@ var appConfig = {
 	wsURL: 'ws://localhost:4005',
 }; 
 
+var gui = new dat.GUI();
+
 var appControllers = angular.module('myApp.controllers', []);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$location', 'api', 'wsserver',
 
@@ -18,6 +19,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.meanOnsetDurations = 0; 
 		$scope.groupActivity = []; 
 
+		$scope.guiVariables = {}; 
+		$scope.guiControllers = []; 
+
+
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
         	$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
@@ -25,10 +30,26 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
         	// $scope.$apply(); 
         }); 
 
+		// Alright this stuff really needs to be a directive or something
+        wsserver.on('config', function(args) {
+
+        	$scope.guiVariables = args;
+
+ 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'decayRate', .000125, .0050));
+ 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'addRate', 0.001, 0.050));
+
+ 	 		_.forEach($scope.guiControllers, function(controller){
+ 	 			controller.onFinishChange(function(value){
+ 	 				$scope.$apply(); 
+ 	 			});
+ 	 		}); 
+
+        });
+
+
         wsserver.connect(appConfig.wsURL);
 
 		$scope.go = function (path) {
-			$rootScope.showMenu = true; 
 			$location.path(path);
 		}
 
@@ -36,6 +57,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			wsserver.send({event: event, group: group})
 		}; 
 
+		$scope.$watch('guiVariables', function(newValue, oldValue) {
+			console.log(newValue);
+			// api.sendMessage('set_near_plane', [newValue]);
+		}, true);
 
 	}
 

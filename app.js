@@ -22,7 +22,6 @@ moment().format();
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 var app = module.exports = express();
 
 app.set('port', process.env.PORT || 6005);
@@ -49,14 +48,17 @@ app.get('/partials/:name', routes.partials);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+var parameters = {
+	decayRate: .0025, 
+	addRate: 0.025, 
+}; 
+
 var touchBuffer = new buf(48); 
 
 var touchStatistics = {
 
 	touchActivity: 0, 
 
-	decayRate: .0025, 
-	addRate: 0.025, 
 
 	//  Inter-onset duration 
 	computeMeanInterOnsetDurations: function() {
@@ -102,8 +104,8 @@ var touchStatistics = {
 
 	add: function() {
 
-		if ( (this.touchActivity + this.addRate) <= 1) 
-			this.touchActivity += this.addRate; 
+		if ( (this.touchActivity + parameters.addRate) <= 1) 
+			this.touchActivity += parameters.addRate; 
 
 		return this.touchActivity; 
 
@@ -112,8 +114,8 @@ var touchStatistics = {
 	decay: function() {
 
 		// Decay if nonzero 
-		if ( (this.touchActivity - this.decayRate) > 0) {
-			this.touchActivity -= this.decayRate;
+		if ( (this.touchActivity - parameters.decayRate) > 0) {
+			this.touchActivity -= parameters.decayRate;
 		}
 
 		// Start popping off touches if nothing
@@ -182,6 +184,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		// console.log('Clients', core.clientList); 
 
 		startTicking(); 
+
+		ws.send(JSON.stringify({event: parameters, name: "config"}), function(error){
+			if(error) console.log(error); 
+		}); 
 
 		ws.on('message', function(message, flags) {
 

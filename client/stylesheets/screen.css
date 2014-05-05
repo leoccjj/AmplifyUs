@@ -249,3 +249,7 @@ svg {
   border-radius: 3px;
   background: rgba(0, 0, 0, 0.075);
 }
+
+.dg.ac {
+  top: 36px !important;
+}
