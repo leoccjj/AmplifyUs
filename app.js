@@ -58,8 +58,6 @@ var touchBuffer = new buf(48);
 var touchStatistics = {
 
 	touchActivity: 0, 
-
-
 	//  Inter-onset duration 
 	computeMeanInterOnsetDurations: function() {
 
@@ -224,6 +222,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				}
 
 
+			}
+
+			if (newMessage.event == "config") {
+				parameters = newMessage.config; 
 			}
 
 		});

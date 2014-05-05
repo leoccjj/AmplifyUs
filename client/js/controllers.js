@@ -21,12 +21,14 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		$scope.guiVariables = {}; 
 		$scope.guiControllers = []; 
+		$scope.serverAvailable = false; 
 
 
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
         	$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
         	$scope.groupActivity = args.groupActivity;
+        	$scope.serverAvailable = true; 
         	// $scope.$apply(); 
         }); 
 
@@ -58,8 +60,11 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		}; 
 
 		$scope.$watch('guiVariables', function(newValue, oldValue) {
-			console.log(newValue);
-			// api.sendMessage('set_near_plane', [newValue]);
+
+			// console.log(newValue);
+			if ($scope.serverAvailable)
+			 	wsserver.send({event: "config", config: newValue});
+
 		}, true);
 
 	}
