@@ -14,6 +14,16 @@ var routes = require('./routes');
 
 var buf = require('CBuffer'); 
 
+var RGBColor = require("./rgb_color");
+
+var HSVColor = require("./hsv_color");
+
+console.log(HSVColor); 
+
+var blue = new HSVColor(0, 0, 1); 
+
+console.log(blue); 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,7 +127,7 @@ var touchStatistics = {
 		}
 
 		// Start popping off touches if nothing
-		if (this.touchActivity <= .002600) {
+		if (this.touchActivity <= .01) {
 			touchBuffer.shift();
 		}
 

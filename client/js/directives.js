@@ -94,7 +94,7 @@ app.directive('touchChart', function () {
 
 			// push a new data point onto the back
 			
-			if (newVal.value) {
+			if (newVal.value !== oldVal.value) {
 
 				data.push(newVal.value);
 
