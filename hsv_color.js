@@ -3,6 +3,7 @@ RgbColor = require("./rgb_color");
 var twoPi = Math.PI * 2;
 
 var setFromRgb = function(hsv, rgb) {
+	
 	var r = rgb.R,
 		g = rgb.G,
 		b = rgb.B;
@@ -33,9 +34,11 @@ var setFromRgb = function(hsv, rgb) {
 
 	hsv.S = max == 0 ? 0 : d / max;
 	hsv.V = max;
+
 };
 
 var HsvColor = function(h, s, v) {
+
 	if (typeof(h) === 'string') {
 		var rgb = new RgbColor(h);
 		setFromRgb(this, rgb);
@@ -50,6 +53,7 @@ var HsvColor = function(h, s, v) {
 	if (!this.isValid()) {
 		throw new Error('Values are out of range: ' + h + ' ' + s + ' ' + v);
 	}
+
 };
 
 HsvColor.prototype.isValid = function() {

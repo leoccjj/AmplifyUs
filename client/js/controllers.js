@@ -35,16 +35,20 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		// Alright this stuff really needs to be a directive or something
         wsserver.on('config', function(args) {
 
-        	$scope.guiVariables = args;
+        	if ($scope.guiControllers.length == 0) {
 
- 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'decayRate', .000125, .0050));
- 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'addRate', 0.001, 0.050));
+	        	$scope.guiVariables = args;
 
- 	 		_.forEach($scope.guiControllers, function(controller){
- 	 			controller.onFinishChange(function(value){
- 	 				$scope.$apply(); 
- 	 			});
- 	 		}); 
+	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'decayRate', .000125, .0050));
+	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'addRate', 0.001, 0.050));
+
+	 	 		_.forEach($scope.guiControllers, function(controller){
+	 	 			controller.onFinishChange(function(value){
+	 	 				$scope.$apply(); 
+	 	 			});
+	 	 		}); 
+	 	 		
+ 	 		}
 
         });
 
