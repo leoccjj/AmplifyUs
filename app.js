@@ -60,18 +60,14 @@ var parameters = {
 	tier3Color: "#000000", 
 };
 
-var colorModel = {};
+var colorModel = new Array();
 
-colorModel.lobby = new HSVColor(0,0,0); 
-colorModel.tier1 = new HSVColor(0,0,0); 
-colorModel.tier2 = new HSVColor(0,0,0); 
-colorModel.tier3 = new HSVColor(0,0,0); 
+colorModel["lobby"] = new HSVColor(0,0,0); 
+colorModel["tier1"] = new HSVColor(0,0,0); 
+colorModel["tier2"] = new HSVColor(0,0,0); 
+colorModel["tier3"] = new HSVColor(0,0,0); 
 
-colorModel.collection = new Array(); 
-colorModel.collection.push(colorModel.lobby);
-colorModel.collection.push(colorModel.tier1);
-colorModel.collection.push(colorModel.tier2);
-colorModel.collection.push(colorModel.tier3);
+console.log(colorModel); 
 
 var touchBuffer = new buf(48); 
 
@@ -321,12 +317,19 @@ Amplifier.prototype.setupOSC = function(options) {
 
 	this.oscServer.on('oscmessage', function(msg, rinfo) {
 
-		var arguments = [];
+		var newMessage = {};
 
 		if (msg.arguments) {
-			for (var a = 0; a < msg.arguments.length; ++a) {
-				arguments.push( msg.arguments[a].value); 
-			}
+
+			// Preprocess newMessage here
+			// newMessage
+
+			myAmplifier.handleTouches(newMessage); 
+
+			//for (var a = 0; a < msg.arguments.length; ++a) {
+			//	arguments.push( msg.arguments[a].value); 
+			//}
+
 		}
 
 	});
