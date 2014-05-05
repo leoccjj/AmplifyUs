@@ -15,14 +15,7 @@ var routes = require('./routes');
 var buf = require('CBuffer'); 
 
 var RGBColor = require("./rgb_color");
-
 var HSVColor = require("./hsv_color");
-
-console.log(HSVColor); 
-
-var blue = new HSVColor(0, 0, 1); 
-
-console.log(blue); 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,14 +53,32 @@ app.get('/partials/:name', routes.partials);
 
 var parameters = {
 	decayRate: .0025, 
-	addRate: 0.025, 
-}; 
+	addRate: 0.025,
+	lobbyColor: "#000000", 
+	tier1Color: "#000000", 
+	tier2Color: "#000000", 
+	tier3Color: "#000000", 
+};
+
+var colorModel = {};
+
+colorModel.lobby = new HSVColor(0,0,0); 
+colorModel.tier1 = new HSVColor(0,0,0); 
+colorModel.tier2 = new HSVColor(0,0,0); 
+colorModel.tier3 = new HSVColor(0,0,0); 
+
+colorModel.collection = new Array(); 
+colorModel.collection.push(colorModel.lobby);
+colorModel.collection.push(colorModel.tier1);
+colorModel.collection.push(colorModel.tier2);
+colorModel.collection.push(colorModel.tier3);
 
 var touchBuffer = new buf(48); 
 
 var touchStatistics = {
 
 	touchActivity: 0, 
+
 	//  Inter-onset duration 
 	computeMeanInterOnsetDurations: function() {
 

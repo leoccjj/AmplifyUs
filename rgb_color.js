@@ -2,11 +2,12 @@ var RgbColor = function(r, g, b) {
 
 	if (typeof(r) === 'string') {
 
-		// straing, not color values .... parse 
+		// string, not color values .... parse 
 		var colorString = r.toLowerCase();
 
 		// remove all whitespace
 		colorString = colorString.replace(/ /g, '');
+
 		// remove any leading hash character
 		colorString = colorString.replace(/^#/, '');
 

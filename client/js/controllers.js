@@ -47,11 +47,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 	 	 				$scope.$apply(); 
 	 	 			});
 	 	 		}); 
-	 	 		
+
  	 		}
 
         });
-
 
         wsserver.connect(appConfig.wsURL);
 
