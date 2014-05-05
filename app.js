@@ -112,8 +112,14 @@ var touchStatistics = {
 	decay: function() {
 
 		// Decay if nonzero 
-		if ( (this.touchActivity - this.decayRate) > 0) 
+		if ( (this.touchActivity - this.decayRate) > 0) {
 			this.touchActivity -= this.decayRate;
+		}
+
+		// Start popping off touches if nothing
+		if (this.touchActivity <= .002600) {
+			touchBuffer.shift();
+		}
 
 		return this.touchActivity; 
 

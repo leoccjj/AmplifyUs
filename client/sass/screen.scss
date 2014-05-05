@@ -115,11 +115,12 @@ svg {
 	position: absolute;
 	top: 0px;
 	transition: all 0.2s ease 0s;
-	width: 270px;
+	width: 100%; 
 	z-index: 100; 
-	height: 100%; 
+	height: 36px;
 
 	&.closed {
+		width: 270px; 
 		height: 36px;
 		overflow: hidden; 
 	}
@@ -143,8 +144,10 @@ svg {
 		border-bottom: 1px solid #282A3A;
 		cursor: pointer;
 		position: relative;
-		width: 100%;
+		width: 270px;
 		height: 36px; 
+		display: inline-block; 
+		// float: left; 
 
 		&:hover {
 			background-color: #0f0f1e;

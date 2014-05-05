@@ -1,9 +1,9 @@
-.side-menu(ng-class="{'closed' : !rootScope.showMenu}", ).clearfix
+.side-menu(ng-class="{'closed' : !rootScope.showMenu}").clearfix
 	
 	ul.menu-list() 
 		li(ng-click="rootScope.showMenu = !rootScope.showMenu;")
 			.icon.back-icon
-				i.fa.fa-chevron-down
+				i.fa(ng-class="rootScope.showMenu ? 'fa-chevron-left' : 'fa-chevron-right'")
 		li(ng-click="go('/overview')")
 			.icon
 				i.fa.fa-circle
@@ -16,10 +16,6 @@
 			.icon
 				i.fa.fa-circle
 			.title Light
-		li(ng-click="go('/nodes')")
-			.icon
-				i.fa.fa-circle
-			.title Nodes
 		li(ng-click="go('/settings')")
 			.icon
 				i.fa.fa-circle

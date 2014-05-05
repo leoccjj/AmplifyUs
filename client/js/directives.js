@@ -87,6 +87,7 @@ app.directive('touchChart', function () {
 			.attr("class", "line")
 			.attr("d", line)
 			.style("stroke", "#0F0F1E")
+			.attr("transform", "translate(0, -2)")
 			.style("stroke-width", "3"); 
 
 		// whenever the bound 'exp' expression changes, execute this 
