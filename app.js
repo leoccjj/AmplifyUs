@@ -149,6 +149,7 @@ var touchStatistics = {
 }
 
 var tickTimer = null; 
+var colorTimer = null; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,25 +224,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				tick.group = newMessage.group; 
 				tick.timestamp = moment().valueOf();
 
+				// Can also process touchup
 				if (newMessage.event == "touchdown") {
-
-					// console.log(tick.value);
-					//ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
-					//	if(error) console.log(error); 
-					//}); 
 
 					touchBuffer.push(tick);
 					touchStatistics.add(); 
 
-				} else if (newMessage.event == "touchup") {
-
-					//tick.value = 0.0001; 
-					//ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
-					//	if(error) console.log(error); 
-					// }); 
-
-				}
-
+				} 
 
 			}
 
@@ -277,6 +266,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		};
 
+		// Loop to update the GUI
 		function startTicking() {
 
 			var tick = {}; 
@@ -294,11 +284,19 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-
 			}, 100); 
 	
-
 		}; 
+
+		// Loop to actually handle control data / interpolations etc 
+		function startColorLoop() {
+
+			// 30 FPS-ish
+			colorTimer = setInterval(function() {
+
+			}, 33);
+
+		};
 
 	});
 
