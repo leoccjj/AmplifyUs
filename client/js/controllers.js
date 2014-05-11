@@ -23,6 +23,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.guiControllers = []; 
 		$scope.serverAvailable = false; 
 
+		$scope.colorBoxOne = {
+			background: "#000000"
+		}; 
 
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
@@ -51,6 +54,12 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
  	 		}
 
         });
+
+        wsserver.on('colors', function(colorEvent) {
+        	
+        	$scope.colorBoxOne.background = colorEvent.colors[0];
+
+        }); 
 
         wsserver.connect(appConfig.wsURL);
 

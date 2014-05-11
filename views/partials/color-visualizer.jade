@@ -1,7 +1,7 @@
 div.color-visualizer
 
 	span.touch-indicator Column %: {{groupActivity[0]}}
-	div.color-box.area-one(ng-mousedown="registerTouch('touchdown', 0);", ng-mouseup="registerTouch('touchup', 0);")
+	div.color-box.area-one(ng-mousedown="registerTouch('touchdown', 0);", ng-mouseup="registerTouch('touchup', 0);", ng-style="colorBoxOne")
 
 	span.touch-indicator Column %: {{groupActivity[1]}}
 	div.color-box.area-two(ng-mousedown="registerTouch('touchdown', 1);", ng-mouseup="registerTouch('touchup', 1);")

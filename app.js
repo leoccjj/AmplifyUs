@@ -286,6 +286,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		// Loop to actually handle control data / interpolations etc 
 		function startColorLoop() {
 
+
+
 			// 30 FPS-ish
 			colorTimer = setInterval(function() {
 
@@ -295,8 +297,29 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				}
 
+				colorModel["lobby"].H += quickColor( ((colorModel["lobby"].H + 1) % 360) ); 
+
+				var eV = {
+					colors: [colorModel["lobby"].toString()]
+				}; 
+
+				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
+					if(error) console.error(error); 
+				});
+
 
 			}, 33);
+
+			function quickColor(degrees) {
+
+				var twoPi = Math.PI * 2;
+
+				var radians = degrees / 180 * Math.PI; 
+
+				return (radians / twoPi); 
+
+			}
+
 
 		};
 
