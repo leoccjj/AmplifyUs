@@ -242,6 +242,7 @@ svg {
 
 .touches {
   margin-top: 24px;
+  display: inline-block;
 }
 .touches svg {
   margin-top: 8px;
@@ -252,4 +253,23 @@ svg {
 
 .dg.ac {
   top: 36px !important;
+}
+
+.hsv {
+  display: inline-block;
+  margin-top: 24px;
+  margin-left: 24px;
+  border-radius: 3px;
+  padding: 8px;
+}
+.hsv #hsv {
+  width: 350px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px 6px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  display: block;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  transform: translate3d(0px, 0px, 0px);
 }

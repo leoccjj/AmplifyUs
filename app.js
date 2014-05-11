@@ -241,7 +241,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			var newMessage = JSON.parse(message);
 
-			if (newMessage.event == "touchdown" || newMessage.event == "touchup") {
+			if (newMessage.event == "touchdown") {
 				myAmplifier.handleTouches(newMessage); 
 			}
 
@@ -401,13 +401,9 @@ Amplifier.prototype.setupWebserver = function() {
 Amplifier.prototype.setupDMX = function(options) {
 
 	// name, driver, device id
+	universe = (options.live == true) ? dmx.addUniverse('amplifier', 'enttec-usb-dmx-pro', 0) : dmx.addUniverse('amplifier', 'null', 0); 
 
-	if (options.live == true) {
-		universe = dmx.addUniverse('amplifier', 'enttec-usb-dmx-pro', 0)
-	} else {
-		universe = dmx.addUniverse('amplifier', 'null', 0)
-	}
-
+	// Zero out the map (not that it really matters)
 	for (var i = 0; i < options.universeSize; i++ ) {
 		universeMap[i] = 0; 
 	}
