@@ -54,10 +54,6 @@ app.get('/partials/:name', routes.partials);
 var parameters = {
 	decayRate: .0025, 
 	addRate: 0.025,
-	lobbyColor: "#000000", 
-	tier1Color: "#000000", 
-	tier2Color: "#000000", 
-	tier3Color: "#000000", 
 };
 
 var colorModel = new Array();
@@ -66,8 +62,6 @@ colorModel["lobby"] = new HSVColor(0,0,0);
 colorModel["tier1"] = new HSVColor(0,0,0); 
 colorModel["tier2"] = new HSVColor(0,0,0); 
 colorModel["tier3"] = new HSVColor(0,0,0); 
-
-console.log(colorModel); 
 
 var touchBuffer = new buf(48); 
 
@@ -220,7 +214,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		// console.log('Clients', core.clientList); 
 
-		startTicking(); 
+		startTicking(); 	// Client control/notification
+		startColorLoop();   // Main control loop
 
 		ws.send(JSON.stringify({event: parameters, name: "config"}), function(error){
 			if(error) console.log(error); 
@@ -231,12 +226,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			var newMessage = JSON.parse(message);
 
 			if (newMessage.event == "touchdown" || newMessage.event == "touchup") {
-
 				myAmplifier.handleTouches(newMessage); 
-
 			}
 
-			if (newMessage.event == "config") {
+			else if (newMessage.event == "config") {
 				parameters = newMessage.config; 
 			}
 
@@ -286,7 +279,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-			}, 100); 
+			}, 125); 
 	
 		}; 
 
@@ -295,6 +288,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			// 30 FPS-ish
 			colorTimer = setInterval(function() {
+
+				if (touchStatistics.touchActivity < 0.25) {
+
+					animationColors.initSlowActivity();
+
+				}
+
 
 			}, 33);
 
@@ -325,7 +325,7 @@ Amplifier.prototype.setupOSC = function(options) {
 		var newMessage = {};
 
 		console.log(msg, rinfo);
-		
+
 		newMessage.eventType = msg[1]; 
 		newMessage.group = msg[2]; 
 		newMessage.sensorPin = msg[3]; 
@@ -344,6 +344,52 @@ Amplifier.prototype.setupWebserver = function() {
 	http.createServer(app).listen(app.get('port'), function () {
 		console.log('Amplifier App istening on port ' + app.get('port'));
 	});
+
+}
+
+var animationColors = {
+
+	state: null,
+
+	initSlowActivity: function() {
+
+		if(!this.checkState('slow')) return;
+
+		// In Radians 
+		colorModel["lobby"] = HSVColor.fromAngle(240, 1, 1);
+
+		colorModel["tier1"] = new HSVColor(0.7277,0,0); 
+		colorModel["tier2"] = new HSVColor(0.7277,0.0,0); 
+		colorModel["tier3"] = new HSVColor(0.7277,0,0); 
+
+		console.log(colorModel["lobby"].toString()); 
+		console.log(colorModel["tier1"].toString()); 
+		console.log(colorModel["tier2"].toString()); 
+		console.log(colorModel["tier3"].toString()); 
+
+	}, 
+
+	initFastActivity: function() {
+
+		if(!this.checkState('fast')) return;
+
+		colorModel["lobby"] = new HSVColor(0,0,0); 
+		colorModel["tier1"] = new HSVColor(0,0,0); 
+		colorModel["tier2"] = new HSVColor(0,0,0); 
+		colorModel["tier3"] = new HSVColor(0,0,0); 
+
+	},
+
+	checkState: function(state) {
+
+		if (this.state !== state) {
+			this.state = state; 
+			return true; 
+		} else {
+			return false; 
+		}
+
+	}
 
 }
 

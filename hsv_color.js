@@ -143,7 +143,10 @@ HsvColor.random = function() {
 	return new HsvColor(Math.random(), Math.random(), Math.random());
 };
 
-HsvColor.fromAngle = function(radians, s, v) {
+HsvColor.fromAngle = function(degrees, s, v) {
+
+	var radians = degrees / 180 * Math.PI; 
+
 	if (typeof(s) === 'undefined')
 		s = 1;
 	if (typeof(v) === 'undefined')
