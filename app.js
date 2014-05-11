@@ -26,7 +26,8 @@ var HSVColor = require("./hsv_color");
 var dmx = new DMX();
 
 // name, driver, device id
-var universe = dmx.addUniverse('amplifier', 'enttec-usb-dmx-pro', 0)
+// enttec-usb-dmx-pro'
+var universe = null;
 
 moment().format();
 
@@ -59,6 +60,8 @@ app.get('/partials/:name', routes.partials);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+var universeMap = {}; 
+
 var parameters = {
 	decayRate: .0025, 
 	addRate: 0.025,
@@ -66,10 +69,10 @@ var parameters = {
 
 var colorModel = new Array();
 
-colorModel["lobby"] = new HSVColor(0,0,0); 
-colorModel["tier1"] = new HSVColor(0,0,0); 
-colorModel["tier2"] = new HSVColor(0,0,0); 
-colorModel["tier3"] = new HSVColor(0,0,0); 
+colorModel[0] = new HSVColor(0,0,0); 
+colorModel[1] = new HSVColor(0,0,0); 
+colorModel[2] = new HSVColor(0,0,0); 
+colorModel[3] = new HSVColor(0,0,0); 
 
 var touchBuffer = new buf(48); 
 
@@ -154,24 +157,29 @@ var colorTimer = null;
 
 function Amplifier(options) {
 
+	console.log("Client Directory:", path.join(__dirname, 'client'));
+
 	// Set up defaults if no options are provided
 	this.options = options || {};
 
-	console.log('[Amplifier Created]: '.magenta, this.options);
+	this.setupWebserver(); 
 
 	this.options.ws = this.options.ws || {};
 	this.options.ws.host = this.options.ws.host || '127.0.0.1';
 	this.options.ws.port = this.options.ws.post || 4005;
+	this.setupWebsocket(this.options.ws);
 
 	this.options.osc = this.options.osc || {};
 	this.options.osc.inputPort = 9000;
 	this.options.osc.outputPort = 10000;
+	this.setupOSC(this.options.osc);
 
-	this.setupWebsocket(this.options.ws);
-	this.setupWebserver(); 
-
-	// Configure OSC if available
-	if (this.options.osc) this.setupOSC(this.options.osc);
+	this.options.dmx = this.options.dmx || {};
+	this.options.dmx.live = this.options.dmx.live || false; 
+	this.options.dmx.numLights = 4; 
+	this.options.dmx.channelsPerLight = 6; 
+	this.options.dmx.universeSize = this.options.dmx.numLights * this.options.dmx.channelsPerLight; 
+	this.setupDMX(this.options.dmx); 
 
 	this.clientList = [];
 
@@ -202,7 +210,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 	var core = this;
 
-	console.log('[Websocket - Listening]: '.magenta, options);
+	console.log('[Websocket - Listening]: '.green, options);
 
 	this.wss = new ws.Server({
 		port: options.port,
@@ -294,26 +302,41 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		// Loop to actually handle control data / interpolations etc 
 		function startColorLoop() {
 
+			var dmxOptions = myAmplifier.options.dmx; 
 
+			console.log(dmxOptions); 
 
 			// 30 FPS-ish
 			colorTimer = setInterval(function() {
 
+				var idx = 0;
+
+				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
+					universeMap[i] = colorModel[idx].toRgb().R;
+					universeMap[i+1] = colorModel[idx].toRgb().G; 
+					universeMap[i+2] = colorModel[idx].toRgb().B;
+					idx++;
+				}
+
+				// universe.update(universeMap); 
+
+				/* 
 				if (touchStatistics.touchActivity < 0.25) {
 
 					animationColors.initSlowActivity();
 
 				}
 
-				colorModel["lobby"].H += quickColor( ((colorModel["lobby"].H + 1) % 360) ); 
+				colorModel[0].H += quickColor( ((colorModel[0].H + 1) % 360) ); 
 
 				var eV = {
-					colors: [colorModel["lobby"].toString()]
+					colors: [colorModel[0].toString()]
 				}; 
 
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
 				});
+				*/ 
 
 
 			}, 33);
@@ -344,7 +367,7 @@ Amplifier.prototype.setupOSC = function(options) {
 
 	if (options.inputPort)
 		this.oscServer = new osc.Server(options.inputPort, '127.0.0.1');
-		console.log('[OSC - Listening]: '.magenta, options);
+		console.log('[OSC - Listening]: '.green, options);
 
 	if (options.outputPort) {
 		// Send to the entire subnet? 
@@ -369,12 +392,27 @@ Amplifier.prototype.setupOSC = function(options) {
 
 Amplifier.prototype.setupWebserver = function() {
 
-	// What current directory are we in?
-	console.log("Public Dir: ", path.join(__dirname, 'client'));
-
 	http.createServer(app).listen(app.get('port'), function () {
-		console.log('Amplifier App istening on port ' + app.get('port'));
+		console.log( ('Amplifier App Listening on port ' + app.get('port')).green );
 	});
+
+}
+
+Amplifier.prototype.setupDMX = function(options) {
+
+	// name, driver, device id
+
+	if (options.live == true) {
+		universe = dmx.addUniverse('amplifier', 'enttec-usb-dmx-pro', 0)
+	} else {
+		universe = dmx.addUniverse('amplifier', 'null', 0)
+	}
+
+	for (var i = 0; i < options.universeSize; i++ ) {
+		universeMap[i] = 0; 
+	}
+
+	console.log('[Amplifier DMX Universe Created]'.green);
 
 }
 
@@ -387,16 +425,16 @@ var animationColors = {
 		if(!this.checkState('slow')) return;
 
 		// In Radians 
-		colorModel["lobby"] = HSVColor.fromAngle(240, 1, 1);
+		colorModel[0] = HSVColor.fromAngle(240, 1, 1);
 
-		colorModel["tier1"] = new HSVColor(0.7277,0,0); 
-		colorModel["tier2"] = new HSVColor(0.7277,0.0,0); 
-		colorModel["tier3"] = new HSVColor(0.7277,0,0); 
+		colorModel[1] = new HSVColor(0.7277,0,0); 
+		colorModel[2] = new HSVColor(0.7277,0.0,0); 
+		colorModel[3] = new HSVColor(0.7277,0,0); 
 
-		console.log(colorModel["lobby"].toString()); 
-		console.log(colorModel["tier1"].toString()); 
-		console.log(colorModel["tier2"].toString()); 
-		console.log(colorModel["tier3"].toString()); 
+		console.log(colorModel[0].toString()); 
+		console.log(colorModel[1].toString()); 
+		console.log(colorModel[2].toString()); 
+		console.log(colorModel[3].toString()); 
 
 	}, 
 
@@ -404,10 +442,10 @@ var animationColors = {
 
 		if(!this.checkState('fast')) return;
 
-		colorModel["lobby"] = new HSVColor(0,0,0); 
-		colorModel["tier1"] = new HSVColor(0,0,0); 
-		colorModel["tier2"] = new HSVColor(0,0,0); 
-		colorModel["tier3"] = new HSVColor(0,0,0); 
+		colorModel[0] = new HSVColor(0,0,0); 
+		colorModel[1] = new HSVColor(0,0,0); 
+		colorModel[2] = new HSVColor(0,0,0); 
+		colorModel[3] = new HSVColor(0,0,0); 
 
 	},
 
@@ -422,33 +460,47 @@ var animationColors = {
 
 	}
 
-}
+};
+
+
+
 
 var handleCLIArguments = function(){
 
-    var argv = process.argv;
+	var argv = process.argv;
 
-    for(var i = 2; i < argv.length; i++){
+	if (argv.length == 2) {
+		startProject({});
+	}
 
-        switch(argv[i]){
+	else {
 
-            case "--serial":
-            	// enumerateSerialPorts(); 
-                break;
-            case "-s": 
-            case "-start":
-            	startProject(argv[++i]); 
-                break;
-        }
-    }
+		for (var i = 2; i < argv.length; i++){
+
+			switch(argv[i]){
+
+				case "--live":
+					startProject({
+						dmx: {
+							live: true, 
+						}
+					});
+					break;
+				default:
+					startProject({});
+					break;
+
+			}
+		}
+
+	}
 
 };
 
-function startProject() {
+var myAmplifier = null; 
 
+function startProject(options) {
+	myAmplifier = new Amplifier(options); 
 }
-
-// Empty Config Object
-var myAmplifier = new Amplifier(); 
 
 handleCLIArguments();
