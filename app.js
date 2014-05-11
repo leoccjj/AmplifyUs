@@ -10,6 +10,9 @@ var moment = require('moment');
 var ws = require('ws');
 var osc = require('node-osc');  
 
+var DMX = require('dmx')
+var DMXAnimation = DMX.Animation;
+
 var routes = require('./routes');   
 
 var buf = require('CBuffer'); 
@@ -19,6 +22,11 @@ var HSVColor = require("./hsv_color");
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var dmx = new DMX();
+
+// name, driver, device id
+var universe = dmx.addUniverse('amplifier', 'enttec-usb-dmx-pro', 0)
 
 moment().format();
 

@@ -32,6 +32,7 @@
     "dmx": "*"
   },
   "dependencies": {
-    "CBuffer": "~0.1.4"
+    "CBuffer": "~0.1.4",
+    "dmx": "0.0.1"
   }
 }

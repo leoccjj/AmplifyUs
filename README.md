@@ -10,4 +10,9 @@ AmplifyUs interactive installation in the Minneapolis Orchestra Hall for EYEO / 
 
 	grunt watch
 
+https://github.com/wiedi/node-dmx
+
+https://github.com/KABA-CCEAC/node-ftdi
+
+http://www.ftdichip.com/Drivers/D2XX.htm
 
