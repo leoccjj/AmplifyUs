@@ -180,10 +180,15 @@ Amplifier.prototype.handleTouches = function(touch) {
 	var now = moment();
 
 	var tick = {}; 
+
+	tick.eventType = touch.eventType; 
 	tick.group = touch.group; 
+	tick.sensorPin = touch.sensorPin; 
+
 	tick.timestamp = moment().valueOf();
 
 	touchBuffer.push(tick);
+
 	touchStatistics.add(); 
 
 	var logMessage = "Touch @ " + touch.group + " : " + now.valueOf(); 
@@ -307,7 +312,7 @@ Amplifier.prototype.setupOSC = function(options) {
 	this.oscClient = {};
 
 	if (options.inputPort)
-		this.oscServer = new osc.Server(options.inputPort, 'localhost');
+		this.oscServer = new osc.Server(options.inputPort, '127.0.0.1');
 		console.log('[OSC - Listening]: '.magenta, options);
 
 	if (options.outputPort) {
@@ -315,26 +320,21 @@ Amplifier.prototype.setupOSC = function(options) {
 		this.oscClient = new osc.Client('224.0.0.0', options.outputPort);
 	}
 
-	this.oscServer.on('oscmessage', function(msg, rinfo) {
+	this.oscServer.on('message', function(msg, rinfo) {
 
 		var newMessage = {};
 
-		if (msg.arguments) {
+		console.log(msg, rinfo);
+		
+		newMessage.eventType = msg[1]; 
+		newMessage.group = msg[2]; 
+		newMessage.sensorPin = msg[3]; 
 
-			// Preprocess newMessage here
-			// newMessage
-
-			myAmplifier.handleTouches(newMessage); 
-
-			//for (var a = 0; a < msg.arguments.length; ++a) {
-			//	arguments.push( msg.arguments[a].value); 
-			//}
-
-		}
+		myAmplifier.handleTouches(newMessage); 
 
 	});
 
-}; 
+}
 
 Amplifier.prototype.setupWebserver = function() {
 
