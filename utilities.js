@@ -188,11 +188,11 @@ util.random_integer = function(min, max) {
 };
 
 util.deg_to_rad = function(angle) {
-	return angle / 180 * Math.PI
+	return angle / 180 * Math.PI;
 };
 
 util.rad_to_deg = function(angle) {
-	return angle * 180 / Math.PI
+	return angle * 180 / Math.PI;
 };
 
 util.in_range = function(x, min, max) {

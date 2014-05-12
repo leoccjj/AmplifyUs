@@ -209,7 +209,7 @@ app.directive('hsvCircle', function () {
 					var dx = x - centerX;
 					var dy = y - centerY;
 
-					var pointRadius = Math.sqrt(square(dx) + square(dy));   // Radius of the point
+					var pointRadius = Math.sqrt(square(dx) + square(dy));   // Radius of the point (len)
 					var pointAngle = 180 * Math.atan2(dy, dx) / Math.PI;    // Angle of the point (in degree)
 
 					if (pointRadius <= circleRadius + 1) {
@@ -229,7 +229,7 @@ app.directive('hsvCircle', function () {
 							alpha = (1 - (pointRadius - circleRadius)) * 255;
 						}
 
-						color.setFromHSV(h, s, 1, alpha);
+						color.setFromHSV(h, s, 1.0, alpha);
 
 					} else {
 						// The point is completely out of the circle.
@@ -248,13 +248,37 @@ app.directive('hsvCircle', function () {
 			}
 
 			canvasCtx.putImageData(imgData, 0, 0);
+	
+			//var twoPi = Math.PI * 2;
+			// var test = new RGBAColor(0, 0, 255, 1);
+			//var radians = degrees / 180 * Math.PI; 
 
-			$('canvas').drawArc({
-				strokeStyle: '#343434',
-  				strokeWidth: 4,
-				x: centerX, y: centerY,
-				radius: 40
-			});
+			// var pointRadius = Math.sqrt(square(dx) + square(dy));   // Radius of the point (len)
+			// var pointAngle = 180 * Math.atan2(dy, dx) / Math.PI;    // Angle of the point (in degree)
+
+			function deg_to_rad (angle) {
+				return angle / 180 * Math.PI; 
+			};
+
+			for ( var i = 0; i < 360; i++) {
+
+				var len = circleRadius / 2; 
+
+				var theta = i * Math.PI / 180; 
+				var dx = len * Math.cos(theta);
+				var dy = len * Math.sin(theta); 
+
+				console.log(dx, dy, circleRadius); 
+
+				$('canvas').drawArc({
+					strokeStyle: '#343434',
+	  				strokeWidth: 2,
+					x: circleRadius + dx, y: circleRadius + dy,
+					radius: 4, 
+					fromCenter: true,
+				});
+
+			}
 
 			// whenever the bound 'exp' expression changes, execute this 
 			scope.$watch('colors', function (newVal, oldVal) {
