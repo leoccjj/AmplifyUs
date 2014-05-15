@@ -339,18 +339,18 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				//colorModel[1].H += quickColor(util.random_int(4, 12));  
 				//colorModel[2].H += quickColor(util.random_int(-5, -9));  
-				// colorModel[3].H += quickColor(util.random_int(2, 7));
+				//colorModel[3].H += quickColor(util.random_int(2, 7));
 
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
 				});
 
-				 console.log(colorModel[0].H); 
+				// console.log(colorModel[0].H); 
 
 			}, 133);
 
 			function quickColor(value, toAdd) {
-				
+
 				var result = ((value * 100) + (toAdd * 100)) % 100;
 
 				return parseFloat(result / 100, 10);

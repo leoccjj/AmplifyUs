@@ -1,7 +1,8 @@
 div.page-container
-	div(touch-node)
-	div.touch-activity-graph
-		h3 Touch Activity
-		touch-chart(point="touchActivity")
-		p Mean Inter-Onset Duration: {{meanOnsetDurations}}ms
 	color-visualizer(model="colorModel")
+	div.touch-wrapper
+		div.touch-activity-graph
+			h3 Touch Activity
+			touch-chart(point="touchActivity")
+			p Mean Inter-Onset Duration: {{meanOnsetDurations}}ms
+		div(touch-node)
