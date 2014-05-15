@@ -119,12 +119,14 @@ app.directive('colorVisualizer', function () {
 			// 0 to circle Radius
 			var rad = circleRadius / 2; 
 
-			var theta = rad_to_deg(colorMarker.H) * Math.PI / 180; 
+			var denormalizedHue = colorMarker.H * (Math.PI * 2); 
+
+			var theta = rad_to_deg(denormalizedHue) * Math.PI / 180; 
 			var dX = rad * Math.cos(theta);
 			var dY = rad * Math.sin(theta); 
 
 			var updatedColor = new RGBAColor();
-			updatedColor.setFromHSV(rad_to_deg(colorMarker.H) % 360, 1.0 / 2, 1.0, 1.0); 
+			updatedColor.setFromHSV(rad_to_deg(denormalizedHue) % 360, 1.0 / 2, 1.0, 1.0); 
 
 			var rgbString = "rgb(" + updatedColor.r + "," + updatedColor.g + "," + updatedColor.b + ")"; 
 

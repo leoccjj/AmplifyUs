@@ -308,10 +308,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			console.log(dmxOptions); 
 
-			colorModel[0].H = util.random_int(0, 360); 
-			colorModel[1].H = util.random_int(0, 360); 
-			colorModel[2].H = util.random_int(0, 360); 
-			colorModel[3].H = util.random_int(0, 360); 
+			colorModel[0].H = util.random_float_normalized(); 
+			colorModel[1].H = util.random_float_normalized(); 
+			colorModel[2].H = util.random_float_normalized(); 
+			colorModel[3].H = util.random_float_normalized(); 
 
 			var counter = 0;
 
@@ -334,52 +334,34 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel: colorModel
 				}; 
 
-				colorModel[0].H += quickColor(util.random_int(0, 3));  
-				colorModel[1].H += quickColor(util.random_int(4, 12));  
-				colorModel[2].H += quickColor(util.random_int(-5, -9));  
-				colorModel[3].H += quickColor(util.random_int(2, 7));
+				colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0.001, 0.025));  
 
-				//colorModel[0].S = 2 * Math.sin(counter);  
-				//colorModel[1].S = 2 * Math.sin(counter); 
-				//colorModel[2].S = 2 * Math.sin(counter);   
-				//colorModel[3].S = 2 * Math.sin(counter);  
 
-				// console.log((Math.sin(counter) + 1)/2);
+				//colorModel[1].H += quickColor(util.random_int(4, 12));  
+				//colorModel[2].H += quickColor(util.random_int(-5, -9));  
+				// colorModel[3].H += quickColor(util.random_int(2, 7));
 
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
 				});
 
-				// universe.update(universeMap); 
-
-				/* 
-				if (touchStatistics.touchActivity < 0.25) {
-
-					animationColors.initSlowActivity();
-
-				}
-
-				colorModel[0].H += quickColor( ((colorModel[0].H + 1) % 360) ); 
-
-				var eV = {
-					colors: [colorModel[0].toString()]
-				}; 
-
-				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
-					if(error) console.error(error); 
-				});
-				*/ 
-
+				 console.log(colorModel[0].H); 
 
 			}, 133);
 
-			function quickColor(degrees) {
+			function quickColor(value, toAdd) {
+				
+				var result = ((value * 100) + (toAdd * 100)) % 100;
 
+				return parseFloat(result / 100, 10);
+
+				/* 
 				var twoPi = Math.PI * 2;
 
 				var radians = degrees / 180 * Math.PI; 
 
 				return ((radians / twoPi) % twoPi); 
+				*/ 
 
 			}
 
@@ -444,55 +426,6 @@ Amplifier.prototype.setupDMX = function(options) {
 
 }
 
-var animationColors = {
-
-	state: null,
-
-	initSlowActivity: function() {
-
-		if(!this.checkState('slow')) return;
-
-		// In Radians 
-		colorModel[0] = HSVColor.fromAngle(240, 1, 1);
-
-		colorModel[1] = new HSVColor(0.7277,0,0); 
-		colorModel[2] = new HSVColor(0.7277,0.0,0); 
-		colorModel[3] = new HSVColor(0.7277,0,0); 
-
-		console.log(colorModel[0].toString()); 
-		console.log(colorModel[1].toString()); 
-		console.log(colorModel[2].toString()); 
-		console.log(colorModel[3].toString()); 
-
-	}, 
-
-	initFastActivity: function() {
-
-		if(!this.checkState('fast')) return;
-
-		colorModel[0] = new HSVColor(0,0,0); 
-		colorModel[1] = new HSVColor(0,0,0); 
-		colorModel[2] = new HSVColor(0,0,0); 
-		colorModel[3] = new HSVColor(0,0,0); 
-
-	},
-
-	checkState: function(state) {
-
-		if (this.state !== state) {
-			this.state = state; 
-			return true; 
-		} else {
-			return false; 
-		}
-
-	}
-
-};
-
-
-
-
 var handleCLIArguments = function(){
 
 	var argv = process.argv;
@@ -509,9 +442,7 @@ var handleCLIArguments = function(){
 
 				case "--live":
 					startProject({
-						dmx: {
-							live: true, 
-						}
+						dmx: { live: true, }
 					});
 					break;
 				default:
