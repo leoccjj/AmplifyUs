@@ -1,0 +1,13 @@
+div.touch-node
+
+	span.touch-indicator Column %: {{groupActivity[0]}}
+	div.column.area-one(ng-mousedown="registerTouch('touchdown', 0);", ng-mouseup="registerTouch('touchup', 0);", ng-style="colorBoxOne")
+
+	span.touch-indicator Column %: {{groupActivity[1]}}
+	div.column.area-two(ng-mousedown="registerTouch('touchdown', 1);", ng-mouseup="registerTouch('touchup', 1);")
+
+	span.touch-indicator Column %: {{groupActivity[2]}}
+	div.column.area-three(ng-mousedown="registerTouch('touchdown', 2);", ng-mouseup="registerTouch('touchup', 2);")
+
+	span.touch-indicator Column %: {{groupActivity[3]}}
+	div.column.area-four(ng-mousedown="registerTouch('touchdown', 3);", ng-mouseup="registerTouch('touchup', 3);")

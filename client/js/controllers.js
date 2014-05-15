@@ -53,9 +53,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
         });
 
         wsserver.on('colors', function(colorEvent) {
-
         	$scope.colorModel = colorEvent.colorModel; 
-
         }); 
 
         wsserver.connect(appConfig.wsURL);

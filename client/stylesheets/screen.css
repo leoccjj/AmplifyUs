@@ -217,13 +217,13 @@ svg {
   width: 100%;
 }
 
-.color-visualizer {
+.touch-node {
   width: 100%;
   line-height: 0px;
   margin: 0;
   padding: 0;
 }
-.color-visualizer .color-box {
+.touch-node .column {
   margin: 0;
   padding: 0;
   min-width: 19.5%;
@@ -233,18 +233,18 @@ svg {
   background: rgba(0, 0, 0, 0.15);
   border-radius: 3px;
 }
-.color-visualizer .touch-indicator {
+.touch-node .touch-indicator {
   position: absolute;
   top: 40px;
   padding-left: 12px;
   color: #f1f1f1;
 }
 
-.touches {
+.touch-activity-graph {
   margin-top: 24px;
   display: inline-block;
 }
-.touches svg {
+.touch-activity-graph svg {
   margin-top: 8px;
   border: 1px solid black;
   border-radius: 3px;
@@ -255,14 +255,14 @@ svg {
   top: 36px !important;
 }
 
-.hsv {
+color-visualizer {
   display: inline-block;
   margin-top: 24px;
   margin-left: 24px;
   border-radius: 3px;
   padding: 8px;
 }
-.hsv #hsv {
+color-visualizer #visualizer-canvas {
   width: 350px;
   border-radius: 50%;
   box-shadow: 0 0 4px 6px rgba(0, 0, 0, 0.2);

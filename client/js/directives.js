@@ -12,12 +12,12 @@ app.directive('menuContainer', function() {
 
 }); 
 
-app.directive('colorVisualizer', function() {
+app.directive('touchNode', function() {
 
 	return {
 		restrict: 'AE',
 		replace: 'true',
-		templateUrl: 'partials/color-visualizer'
+		templateUrl: 'partials/touch-node'
 	};
 
 });
@@ -79,7 +79,7 @@ app.directive('touchChart', function () {
 		scope.$watch('point', function (newVal, oldVal) {
 
 			// push a new data point onto the back
-			if (newVal.value !== oldVal.value) {
+			if (newVal.value != oldVal.value) {
 				
 				data.push(newVal.value);
 
@@ -104,7 +104,7 @@ app.directive('touchChart', function () {
 
 });
 
-app.directive('hsvCircle', function () {
+app.directive('colorVisualizer', function () {
 
 	var canvasElem; 	// The DOM node element of the <canvas>
 	var canvasCtx; 		// The 2D context of the <canvas>
@@ -158,14 +158,14 @@ app.directive('hsvCircle', function () {
 
 		restrict: 'AE',
 		scope: {
-			colors: '='
+			model: '='
 		},
 
-		template: '<canvas id="hsv"> </canvas>', 
+		template: '<canvas id="visualizer-canvas"> </canvas>', 
 
 		link: function (scope, element, attrs) {
 
-			canvasElem = document.getElementById("hsv");
+			canvasElem = document.getElementById("visualizer-canvas");
 			canvasCtx = canvasElem.getContext("2d");
 
 			canvasElem.width = 600;
@@ -175,7 +175,6 @@ app.directive('hsvCircle', function () {
 			var centerY = canvasElem.height / 2;
 
 			circleRadius = Math.floor(Math.min(canvasElem.width, canvasElem.height) / 2) - 2;
-
 
 			/* 
 
@@ -241,7 +240,7 @@ app.directive('hsvCircle', function () {
 			//var dataUrl = canvasElem.toDataURL();
 		 	//canvasElem.style.background='url('+dataUrl+')'
 
-			scope.$watch('colors', function (newVal, oldVal) {
+			scope.$watch('model', function (newVal, oldVal) {
 				
 				if (newVal !== oldVal) {
 					// canvasCtx.putImageData(imgData, 0, 0);

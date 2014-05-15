@@ -202,14 +202,14 @@ svg {
 	width: 100%; 
 }
 
-.color-visualizer {
+.touch-node {
 
 	width: 100%; 
 	line-height: 0px;
 	margin: 0;
 	padding: 0; 
 
-	.color-box {
+	.column {
 		margin: 0;
 		padding: 0; 
 		min-width: 19.5%;
@@ -229,7 +229,7 @@ svg {
 
 }
 
-.touches {
+.touch-activity-graph {
 
 	margin-top: 24px; 
 	display: inline-block; 
@@ -247,7 +247,7 @@ svg {
 	top: 36px!important; 
 }
 
-.hsv {
+color-visualizer {
 
 	display: inline-block; 
 	margin-top: 24px; 
@@ -255,7 +255,7 @@ svg {
 	border-radius: 3px;
 	padding: 8px; 
 
-	#hsv {
+	#visualizer-canvas {
 		width: 350px;
 		border-radius: 50%;
 		box-shadow: 0 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -267,4 +267,5 @@ svg {
 		padding: 0;
 		transform: translate3d(0px, 0px, 0px);
 	}
+
 }
