@@ -183,7 +183,7 @@ util.sign = function (x) {
 	return ( x < 0 ) ? -1 : ( ( x > 0 ) ? 1 : 0 );
 };
 
-util.random_integer = function(min, max) {
+util.random_int = function(min, max) {
 	return min + Math.floor( Math.random() * ( max - min + 1 ) );
 };
 

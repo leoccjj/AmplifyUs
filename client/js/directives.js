@@ -1,57 +1,5 @@
 'use strict';
 
-function RGBAColor(r, g, b, alpha) {
-	this.r = r;
-	this.g = g;
-	this.b = b;
-	this.alpha = alpha;
-}
-
-RGBAColor.prototype.setFromHSV = function(h, s, v, alpha) {
-
-	h = h % 360;
-
-	if (h < 0) {
-		h += 360;
-	}
-
-	var c = v * s;
-	var h1 = h / 60;
-	var x = c * (1 - Math.abs(h1%2 - 1));
-	var r1 = 0, g1 = 0, b1 = 0;
-
-	switch (Math.floor(h1)) {
-		case 0: r1 = c; g1 = x; b1 = 0; break;
-		case 1: r1 = x; g1 = c; b1 = 0; break;
-		case 2: r1 = 0; g1 = c; b1 = x; break;
-		case 3: r1 = 0; g1 = x; b1 = c; break;
-		case 4: r1 = x; g1 = 0; b1 = c; break;
-		case 5: r1 = c; g1 = 0; b1 = x; break;
-	}
-
-	var m = v - c;
-
-	this.r = Math.floor((r1 + m) * 255);
-	this.g = Math.floor((g1 + m) * 255);
-	this.b = Math.floor((b1 + m) * 255);
-	this.alpha = alpha;
-	
-};
-
-RGBAColor.prototype.setRGBA = function(r, g, b, alpha) {
-	this.r = r;
-	this.g = g;
-	this.b = b;
-	this.alpha = alpha;
-};
-
-function square(n) {
-	return n*n;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 var app = angular.module('myApp');
 
 app.directive('menuContainer', function() {
@@ -100,16 +48,12 @@ app.directive('touchChart', function () {
   return {
 
 	restrict: 'AE',
-	scope: { // attributes bound to the scope of the directive
+	scope: { 
 		point: '='
 	},
 
 	link: function (scope, element, attrs) {
 
-		// initialization, done once per my-directive tag in template. If my-directive is within an
-		// ng-repeat-ed template then it will be called every time ngRepeat creates a new copy of the template.
-
-		// set up initial svg object
 		var vis = d3.select(element[0])
 			.append("svg")
 			.attr("width", width)
@@ -123,15 +67,6 @@ app.directive('touchChart', function () {
 			.attr("width", width)
 			.attr("height", height);
 
-		//vis.append("g")
-		//	.attr("class", "x axis")
-		//	.attr("transform", "translate(0," + y(0) + ")")
-		//	.call(d3.svg.axis().scale(x).orient("bottom"));
-
-		//vis.append("g")
-		//	.attr("class", "y axis")
-		//	.call(d3.svg.axis().scale(y).orient("left"));
-
 		var path = vis.append("g")
 			.attr("clip-path", "url(#clip)")
 			.append("path")
@@ -141,11 +76,9 @@ app.directive('touchChart', function () {
 			.style("stroke", "#0F0F1E")
 			.style("stroke-width", "3"); 
 
-		// whenever the bound 'exp' expression changes, execute this 
 		scope.$watch('point', function (newVal, oldVal) {
 
 			// push a new data point onto the back
-			
 			if (newVal.value !== oldVal.value) {
 				
 				data.push(newVal.value);
@@ -173,15 +106,61 @@ app.directive('touchChart', function () {
 
 app.directive('hsvCircle', function () {
 
-	var canvasElem; // The DOM node element of the <canvas>
-	var canvasCtx; // The 2D context of the <canvas>
+	var canvasElem; 	// The DOM node element of the <canvas>
+	var canvasCtx; 		// The 2D context of the <canvas>
+	var circleRadius;   // size of the wheel 
+
+	function drawColorsOnWheel (colors) {
+
+		_.forEach(colors, function(colorMarker, index){
+
+			if (colorMarker.H === 0) return; 
+
+			// 0 to circle Radius
+			var rad = circleRadius / 2; 
+
+			var theta = rad_to_deg(colorMarker.H) * Math.PI / 180; 
+			var dX = rad * Math.cos(theta);
+			var dY = rad * Math.sin(theta); 
+
+			var updatedColor = new RGBAColor();
+			updatedColor.setFromHSV(rad_to_deg(colorMarker.H) % 360, 1.0 / 2, 1.0, 1.0); 
+
+			var rgbString = "rgb(" + updatedColor.r + "," + updatedColor.g + "," + updatedColor.b + ")"; 
+
+			//console.log(rgbString);
+			var myLayer = $('canvas').getLayer("circle-" + index);
+
+			if ( myLayer === undefined ) {
+				$('canvas').drawArc({
+					layer: true,
+					name: "circle-" + index, 
+					strokeStyle: "#5e5b5e",
+					strokeWidth: 4,
+					fillStyle: rgbString, 
+					x: circleRadius + dX, y: circleRadius + dY,
+					radius: 24, 
+				});
+			} else {
+
+				myLayer.x = circleRadius + dX;
+				myLayer.y = circleRadius + dY;
+				myLayer.fillStyle = rgbString; 
+			}
+
+			$('canvas').drawLayer("circle-" + index);
+
+		});
+
+	}; 
 
 	return {
 
 		restrict: 'AE',
-		scope: { // attributes bound to the scope of the directive
-			point: '='
+		scope: {
+			colors: '='
 		},
+
 		template: '<canvas id="hsv"> </canvas>', 
 
 		link: function (scope, element, attrs) {
@@ -198,7 +177,7 @@ app.directive('hsvCircle', function () {
 			var centerX = canvasElem.width / 2;
 			var centerY = canvasElem.height / 2;
 
-			var circleRadius = Math.floor(Math.min(canvasElem.width, canvasElem.height) / 2) - 2;
+			circleRadius = Math.floor(Math.min(canvasElem.width, canvasElem.height) / 2) - 2;
 
 			var color = new RGBAColor();
 
@@ -232,8 +211,7 @@ app.directive('hsvCircle', function () {
 						color.setFromHSV(h, s, 1.0, alpha);
 
 					} else {
-						// The point is completely out of the circle.
-						// This is used to draw a fully transparent pixel.
+						// Point is completely out of the circle; used to draw a fully transparent pixel.
 						color.setRGBA(0, 0, 0, 0);
 					}
 
@@ -248,41 +226,14 @@ app.directive('hsvCircle', function () {
 			}
 
 			canvasCtx.putImageData(imgData, 0, 0);
-	
-			//var twoPi = Math.PI * 2;
-			// var test = new RGBAColor(0, 0, 255, 1);
-			//var radians = degrees / 180 * Math.PI; 
 
-			// var pointRadius = Math.sqrt(square(dx) + square(dy));   // Radius of the point (len)
-			// var pointAngle = 180 * Math.atan2(dy, dx) / Math.PI;    // Angle of the point (in degree)
-
-			function deg_to_rad (angle) {
-				return angle / 180 * Math.PI; 
-			};
-
-			for ( var i = 0; i < 360; i++) {
-
-				var len = circleRadius / 2; 
-
-				var theta = i * Math.PI / 180; 
-				var dx = len * Math.cos(theta);
-				var dy = len * Math.sin(theta); 
-
-				console.log(dx, dy, circleRadius); 
-
-				$('canvas').drawArc({
-					strokeStyle: '#343434',
-	  				strokeWidth: 2,
-					x: circleRadius + dx, y: circleRadius + dy,
-					radius: 4, 
-					fromCenter: true,
-				});
-
-			}
-
-			// whenever the bound 'exp' expression changes, execute this 
 			scope.$watch('colors', function (newVal, oldVal) {
-
+				
+				if (newVal !== oldVal) {
+					canvasCtx.putImageData(imgData, 0, 0);
+					drawColorsOnWheel(newVal); 
+				}
+				
 			}, true);
 
 

@@ -222,7 +222,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		var newClient = getClientAddress(ws); 
 
 		core.clientList = [];
+
 		clearInterval(tickTimer);
+		clearInterval(colorTimer);
 
 		console.log("[Websocket] // New Connection From: ".blue, newClient);
 
@@ -253,8 +255,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		ws.on('close', function() {
 			
-			console.log('Clearing Tick Timer: '.red)
 			clearInterval(tickTimer);
+			clearInterval(colorTimer);
 
 			// client.connection._socket._handle
 
@@ -306,10 +308,18 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			console.log(dmxOptions); 
 
+			colorModel[0].H = util.random_int(0, 360); 
+			colorModel[1].H = util.random_int(0, 360); 
+			colorModel[2].H = util.random_int(0, 360); 
+			colorModel[3].H = util.random_int(0, 360); 
+
+			var counter = 0;
+
 			// 30 FPS-ish
 			colorTimer = setInterval(function() {
 
 				var idx = 0;
+				counter++; 
 
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
 					universeMap[i] = colorModel[idx].toRgb().R;
@@ -317,6 +327,28 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					universeMap[i+2] = colorModel[idx].toRgb().B;
 					idx++;
 				}
+
+				// universe.update(universeMap); 
+
+				var eV = {
+					colorModel: colorModel
+				}; 
+
+				colorModel[0].H += quickColor(util.random_int(0, 3));  
+				colorModel[1].H += quickColor(util.random_int(4, 12));  
+				colorModel[2].H += quickColor(util.random_int(-5, -9));  
+				colorModel[3].H += quickColor(util.random_int(2, 7));
+
+				//colorModel[0].S = 2 * Math.sin(counter);  
+				//colorModel[1].S = 2 * Math.sin(counter); 
+				//colorModel[2].S = 2 * Math.sin(counter);   
+				//colorModel[3].S = 2 * Math.sin(counter);  
+
+				// console.log((Math.sin(counter) + 1)/2);
+
+				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
+					if(error) console.error(error); 
+				});
 
 				// universe.update(universeMap); 
 
@@ -339,7 +371,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				*/ 
 
 
-			}, 33);
+			}, 133);
 
 			function quickColor(degrees) {
 
@@ -347,7 +379,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				var radians = degrees / 180 * Math.PI; 
 
-				return (radians / twoPi); 
+				return ((radians / twoPi) % twoPi); 
 
 			}
 

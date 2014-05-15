@@ -23,19 +23,16 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.guiControllers = []; 
 		$scope.serverAvailable = false; 
 
-		$scope.colorBoxOne = {
-			background: "#000000"
-		}; 
+		$scope.colorModel = new Array();
 
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
         	$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
         	$scope.groupActivity = args.groupActivity;
         	$scope.serverAvailable = true; 
-        	// $scope.$apply(); 
         }); 
 
-		// Alright this stuff really needs to be a directive or something
+		// Todo: this needs to be a directive or something... 
         wsserver.on('config', function(args) {
 
         	if ($scope.guiControllers.length == 0) {
@@ -56,8 +53,8 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
         });
 
         wsserver.on('colors', function(colorEvent) {
-        	
-        	$scope.colorBoxOne.background = colorEvent.colors[0];
+
+        	$scope.colorModel = colorEvent.colorModel; 
 
         }); 
 
@@ -73,7 +70,6 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		$scope.$watch('guiVariables', function(newValue, oldValue) {
 
-			// console.log(newValue);
 			if ($scope.serverAvailable)
 			 	wsserver.send({event: "config", config: newValue});
 

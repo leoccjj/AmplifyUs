@@ -104,6 +104,7 @@ HsvColor.prototype.toRgb = function() {
 	}
 
 	return new RgbColor(r, g, b);
+	
 };
 
 //noinspection FunctionWithInconsistentReturnsJS
