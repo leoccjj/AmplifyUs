@@ -261,7 +261,8 @@ svg {
 		box-shadow: 0 0 4px 6px rgba(0, 0, 0, 0.2);
 		box-sizing: border-box;
 		display: block;
-		height: auto;
+		background: url('/assets/wheel.png');
+		background-size: 350px 350px!important; 
 		margin: 0;
 		padding: 0;
 		transform: translate3d(0px, 0px, 0px);

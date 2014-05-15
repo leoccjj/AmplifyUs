@@ -148,7 +148,7 @@ app.directive('hsvCircle', function () {
 				myLayer.fillStyle = rgbString; 
 			}
 
-			$('canvas').drawLayer("circle-" + index);
+			$('canvas').drawLayers(); // ("circle-" + index);
 
 		});
 
@@ -169,7 +169,15 @@ app.directive('hsvCircle', function () {
 			canvasCtx = canvasElem.getContext("2d");
 
 			canvasElem.width = 600;
-			canvasElem.height = 600; 
+			canvasElem.height = 600;
+
+			var centerX = canvasElem.width / 2;
+			var centerY = canvasElem.height / 2;
+
+			circleRadius = Math.floor(Math.min(canvasElem.width, canvasElem.height) / 2) - 2;
+
+
+			/* 
 
 			var imgData = canvasCtx.getImageData(0, 0, canvasElem.width, canvasElem.height);
 			var pix = imgData.data;
@@ -224,16 +232,22 @@ app.directive('hsvCircle', function () {
 
 				}
 			}
+	
+			*/ 
 
-			canvasCtx.putImageData(imgData, 0, 0);
+			// Manually saved this to the asssets directory 
+			// canvasCtx.putImageData(imgData, 0, 0);
+
+			//var dataUrl = canvasElem.toDataURL();
+		 	//canvasElem.style.background='url('+dataUrl+')'
 
 			scope.$watch('colors', function (newVal, oldVal) {
 				
 				if (newVal !== oldVal) {
-					canvasCtx.putImageData(imgData, 0, 0);
+					// canvasCtx.putImageData(imgData, 0, 0);
 					drawColorsOnWheel(newVal); 
 				}
-				
+
 			}, true);
 
 
