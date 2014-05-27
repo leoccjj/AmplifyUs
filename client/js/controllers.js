@@ -25,6 +25,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.serverAvailable = false; 
 
 		$scope.colorModel = new Array();
+		$scope.audioModel = new Object(); 
 
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
@@ -72,6 +73,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
         wsserver.on('colors', function(colorEvent) {
         	$scope.colorModel = colorEvent.colorModel; 
+        });
+
+        wsserver.on('audio', function(audioEvent) {
+        	$scope.audioModel = audioEvent.audioModel; 
         }); 
 
         wsserver.connect(appConfig.wsURL);

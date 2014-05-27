@@ -74,6 +74,31 @@ colorModel[1] = new HSVColor(0,0,0);
 colorModel[2] = new HSVColor(0,0,0); 
 colorModel[3] = new HSVColor(0,0,0); 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+var audioModel = {
+		gain: 0.25, 
+		tempo: 115, 
+		celloIntensity: 0.0,
+		plinkIntensity: 0.0,
+		musicboxIntensity: 0.0,
+		vibraphoneIntensity: 0.0,
+		rhodesIntensity: 0.0,
+		synthPianoIntensity: 0.0, 
+		patatap_a: 0.0,
+		patatap_b: 0.0,
+		patatap_c: 0.0, 
+		delayFeedback: 0.25,
+		delayWet: 1.0, 
+		delaySync: "8D",
+		mute: false, 
+	}; 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 var touchBuffer = new buf(48); 
 
 var touchStatistics = {
@@ -325,12 +350,15 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			var counter = 0;
 
-			// 30 FPS-ish
+			// TODO: Tighten this loop as much as possible
 			colorTimer = setInterval(function() {
 
 				var idx = 0;
 				counter++; 
 
+				// Universe increments in groups of six because
+				// that's how many channels the lights use (we only use the first three)
+				// * 255 to turn the normalized RGB value into DMX range 
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
 					universeMap[i] = colorModel[idx].toRgb().R * 255; 
 					universeMap[i+1] = colorModel[idx].toRgb().G * 255; 
@@ -338,8 +366,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					//console.log(universeMap[i]);
 					idx++;
 				}
-
-				// universe.update(universeMap); 
 
 				var eV = {
 					colorModel: colorModel
@@ -350,18 +376,14 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				colorModel[2].H = quickColor(colorModel[2].H, util.random_float(0.0001, 0.0015)); 
 				colorModel[3].H = quickColor(colorModel[3].H, util.random_float(0.0001, 0.0050)); 
 
-
-				//colorModel[1].H += quickColor(util.random_int(4, 12));  
-				//colorModel[2].H += quickColor(util.random_int(-5, -9));  
-				//colorModel[3].H += quickColor(util.random_int(2, 7));
-
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
 				});
 
-				// console.log(colorModel[0].H); 
+				// SEND DATA VIA DMX!!! Do not forget to uncomment
+				// universe.update(universeMap); 
 
-			}, 33);
+			}, 66);
 
 			function quickColor(value, toAdd) {
 
@@ -369,16 +391,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				return parseFloat(result / 100, 10);
 
-				/* 
-				var twoPi = Math.PI * 2;
-
-				var radians = degrees / 180 * Math.PI; 
-
-				return ((radians / twoPi) % twoPi); 
-				*/ 
-
 			}
-
 
 		};
 

@@ -20,7 +20,8 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 		'websocket-closed': function() {}, // no args
 		'tick': function () {}, 
 		'config': function () {}, 
-		'colors': function() {}
+		'colors': function() {},
+		'audio': function() {}
 	};
 
 	var on = function(e, f) { // assign callback functions

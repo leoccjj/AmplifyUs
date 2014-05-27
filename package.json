@@ -36,6 +36,7 @@
     "dmx": "0.0.1",
     "node-twitter-api": "~1.2.2",
     "twitter": "~0.2.9",
-    "twitter-ng": "~0.6.2"
+    "twitter-ng": "~0.6.2",
+    "watch": "~0.10.0"
   }
 }
