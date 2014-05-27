@@ -2,9 +2,10 @@ var appConfig = {
 	wsURL: 'ws://localhost:4005',
 }; 
 
-var gui = new dat.GUI();
-
 var appControllers = angular.module('myApp.controllers', []);
+
+var audioEngine = new DMAF.Framework(); 
+var gui = new dat.GUI();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +14,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 	function($q, $rootScope, $scope, $location, api, wsserver) {
 
-		// {color:'red'}
+		audioEngine.dispatch("loadGlobal");
 
 		$scope.touchActivity = {}; 
 		$scope.meanOnsetDurations = 0; 
@@ -50,6 +51,23 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
  	 		}
 
+			if(!audioEngine.enabled){
+				console.log("AudioEngine not active", audioEngine);
+				return;
+			}
+
+			audioEngine.loadPatterns();
+
+			console.log("SynthManager", DMAF.Managers.getSynthManager());
+			console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
+			console.log("MusicController", DMAF.Processors.getMusicController());
+
+			audioEngine.dispatch("musicOn");
+
+			setInterval(function() {
+				audioEngine.dispatch("transpose");
+			}, 4 * DMAF.Processors.getMusicController().player.barLength);
+
         });
 
         wsserver.on('colors', function(colorEvent) {
@@ -77,6 +95,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 ]);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 appControllers.controller('MenuController', ['$q', '$rootScope', '$scope', '$location', 'api', 
 
 	function($q, $rootScope, $scope, $location, api) {
@@ -84,7 +105,6 @@ appControllers.controller('MenuController', ['$q', '$rootScope', '$scope', '$loc
 		$scope.go = function (path) {
 			$location.path(path);
 		}
-
 
 	}
 

@@ -1,3 +1,7 @@
+if (/iPhone/.test(navigator.userAgent) || /iPad/.test(navigator.userAgent) || /Android/.test(navigator.userAgent)) {
+	alert("Browser Not Supported"); 
+}
+
 var module = angular.module('myApp', [
 	'ngRoute',
 	'ngResource',
