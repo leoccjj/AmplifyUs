@@ -5,12 +5,13 @@ block body
 	.topbar
 
 		.logo-wrap
-			span.logo Amplifier
+			span.logo EYEO 2014 | Amplifier
 
 	div(ng-controller="MenuController", menu-container)
 
 	div(ng-view)
 
+	// Dependencies
 	script(src="lib/jquery-2.0.3.min.js")
 	script(src="lib/modernizr-2.6.2.min.js")
 	script(src="lib/jcanvas.min.js")
@@ -24,19 +25,29 @@ block body
 	script(src='lib/angular/angular-ui-router.min.js')
 	script(src='lib/angular/angular-touch.min.js')
 
-	// Utility
+	// Util Libs
 	script(src="lib/underscore-min.js")
 	script(src="lib/bootstrap.min.js")
 	script(src="lib/dat.gui.min.js")
-
 
 	// Angular UI - Bootstrap
 	script(src='lib/angular/ui-bootstrap.min.js')
 	script(src='lib/angular/ui-bootstrap-tpls.min.js')
 
-	// App 
+	// Util 
 	script(src="js/util.js")
-	script(src="js/sound.js")
+
+	// Audio
+	script(src='audio/project-config.js')
+	script(src='audio/sample-map.js')
+	script(src='audio/dmaf.js')
+	script(src='audio/pattern-data.js')
+	script(src='audio/instrument-meta.js')
+	script(src='audio/audio-nodes.js')
+	script(src='audio/pattern-controller.js')
+	script(src='audio/main-controller.js')
+
+	// Main Angular Application
 	script(src='js/app.js')
 	script(src='js/services.js')
 	script(src='js/controllers.js')

@@ -138,10 +138,10 @@ app.directive('colorVisualizer', function () {
 					layer: true,
 					name: "circle-" + index, 
 					strokeStyle: "#5e5b5e",
-					strokeWidth: 4,
+					strokeWidth: 1 + index,
 					fillStyle: rgbString, 
 					x: circleRadius + dX, y: circleRadius + dY,
-					radius: 24, 
+					radius: 32, 
 				});
 			} else {
 

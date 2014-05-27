@@ -313,6 +313,16 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			colorModel[2].H = util.random_float_normalized(); 
 			colorModel[3].H = util.random_float_normalized(); 
 
+			colorModel[0].S = 1; 
+			colorModel[1].S = 1;
+			colorModel[2].S = 1;
+			colorModel[3].S = 1;
+
+			colorModel[0].V = 1; 
+			colorModel[1].V = 1;
+			colorModel[2].V = 1;
+			colorModel[3].V = 1;
+
 			var counter = 0;
 
 			// 30 FPS-ish
@@ -322,9 +332,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				counter++; 
 
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
-					universeMap[i] = colorModel[idx].toRgb().R;
-					universeMap[i+1] = colorModel[idx].toRgb().G; 
-					universeMap[i+2] = colorModel[idx].toRgb().B;
+					universeMap[i] = colorModel[idx].toRgb().R * 255; 
+					universeMap[i+1] = colorModel[idx].toRgb().G * 255; 
+					universeMap[i+2] = colorModel[idx].toRgb().B * 255; 
+					//console.log(universeMap[i]);
 					idx++;
 				}
 
@@ -334,7 +345,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel: colorModel
 				}; 
 
-				colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0.001, 0.025));  
+				colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0.0002, 0.0025)); 
+				colorModel[1].H = quickColor(colorModel[1].H, util.random_float(0.0001, 0.00065)); 
+				colorModel[2].H = quickColor(colorModel[2].H, util.random_float(0.0001, 0.0015)); 
+				colorModel[3].H = quickColor(colorModel[3].H, util.random_float(0.0001, 0.0050)); 
 
 
 				//colorModel[1].H += quickColor(util.random_int(4, 12));  
@@ -347,7 +361,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				// console.log(colorModel[0].H); 
 
-			}, 133);
+			}, 33);
 
 			function quickColor(value, toAdd) {
 
