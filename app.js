@@ -20,6 +20,11 @@ var buf = require('CBuffer');
 var RGBColor = require("./rgb_color");
 var HSVColor = require("./hsv_color");
 
+var WatchJS = require("watchjs")
+var watch = WatchJS.watch;
+var unwatch = WatchJS.unwatch;
+var callWatchers = WatchJS.callWatchers;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -78,23 +83,27 @@ colorModel[3] = new HSVColor(0,0,0);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 var audioModel = {
-		gain: 0.25, 
-		tempo: 115, 
-		celloIntensity: 0.0,
-		plinkIntensity: 0.0,
-		musicboxIntensity: 0.0,
-		vibraphoneIntensity: 0.0,
-		rhodesIntensity: 0.0,
-		synthPianoIntensity: 0.0, 
-		patatap_a: 0.0,
-		patatap_b: 0.0,
-		patatap_c: 0.0, 
-		delayFeedback: 0.25,
-		delayWet: 1.0, 
-		delaySync: "8D",
-		mute: false, 
-	}; 
+	gain: 0.25, 
+	tempo: 115, 
+	celloIntensity: 0.0,
+	plinkIntensity: 0.0,
+	musicboxIntensity: 0.0,
+	vibraphoneIntensity: 0.0,
+	rhodesIntensity: 0.0,
+	synthPianoIntensity: 0.0, 
+	patatap_a: 0.0,
+	patatap_b: 0.0,
+	patatap_c: 0.0, 
+	delayFeedback: 0.25,
+	delayWet: 1.0, 
+	delaySync: "8D",
+	mute: false, 
+}; 
 
+
+watch(ex3, function(){
+    alert("some attribute of ex3 changes!");
+});
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////

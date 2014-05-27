@@ -37,6 +37,6 @@
     "node-twitter-api": "~1.2.2",
     "twitter": "~0.2.9",
     "twitter-ng": "~0.6.2",
-    "watch": "~0.10.0"
+    "watchjs": "0.0.0"
   }
 }
