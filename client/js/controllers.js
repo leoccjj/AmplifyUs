@@ -65,9 +65,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			audioEngine.dispatch("musicOn");
 
-			setInterval(function() {
-				audioEngine.dispatch("transpose");
-			}, 4 * DMAF.Processors.getMusicController().player.barLength);
+			//setInterval(function() {
+			//	audioEngine.dispatch("transpose");
+			//}, 4 * DMAF.Processors.getMusicController().player.barLength);
 
         });
 
@@ -76,7 +76,13 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
         });
 
         wsserver.on('audio', function(audioEvent) {
-        	$scope.audioModel = audioEvent.audioModel; 
+
+        	console.log('audioEvent', audioEvent.audioModel); 
+
+        	var model = audioEvent.audioModel;
+
+        	dispatch(model);
+
         }); 
 
         wsserver.connect(appConfig.wsURL);
@@ -95,6 +101,15 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			 	wsserver.send({event: "config", config: newValue});
 
 		}, true);
+
+		function dispatch(model) {
+			if (model.instrument) {
+				audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
+			}
+			else {
+				audioEngine.dispatch(model.key); 
+			}
+		}
 
 	}
 

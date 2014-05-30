@@ -83,27 +83,77 @@ colorModel[3] = new HSVColor(0,0,0);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 var audioModel = {
-	gain: 0.25, 
+	gain: {
+		value: 0.25,
+		key: "",
+		instrument: ""
+	},
 	tempo: 115, 
-	celloIntensity: 0.0,
-	plinkIntensity: 0.0,
-	musicboxIntensity: 0.0,
-	vibraphoneIntensity: 0.0,
-	rhodesIntensity: 0.0,
-	synthPianoIntensity: 0.0, 
-	patatap_a: 0.0,
-	patatap_b: 0.0,
-	patatap_c: 0.0, 
-	delayFeedback: 0.25,
-	delayWet: 1.0, 
+	celloIntensity: {
+		value: 0.0,
+		key: "intensity", 
+		instrument: "cello_pluck"
+	},
+	plinkIntensity: {
+		value: 0.0,
+		key: "intensity", 
+		instrument: "syntklocka_stab_plink"
+	},
+	musicbox: {
+		value: 0.0,
+		key: "intensity", 
+		instrument: "musicbox"
+	}, 
+	vibraphoneIntensity: {
+		value: 0.0,
+		key: "intensity", 
+		instrument: "vibraphone"
+	}, 
+	rhodesIntensity: {
+		value: 0.0,
+		key: "intensity", 
+		instrument: "rhodes_noize"
+	}, 
+	synthPianoIntensity: {
+		value: 0.0,
+		key: "intensity", 
+		instrument: "synth_appointed_piano"
+	}, 
+	patatap_a: {
+		value: 0.0,
+		key: "percussion_volume", 
+		instrument: "a"
+	}, 
+	patatap_b: {
+		value: 0.0,
+		key: "percussion_volume", 
+		instrument: "b"
+	}, 
+	patatap_c: {
+		value: 0.0,
+		key: "percussion_volume", 
+		instrument: "c"
+	}, 
+	delayFeedback: {
+		value: 0.0,
+		key: "delay_feedback", 
+		instrument: "delay"
+	}, 
+	delayWet: {
+		value: 0.0,
+		key: "delay_wet", 
+		instrument: "delay"
+	}, 
 	delaySync: "8D",
 	mute: false, 
+	transpose: false, 
 }; 
 
-
-watch(ex3, function(){
-    alert("some attribute of ex3 changes!");
-});
+setInterval(function(){
+	//audioModel.gain = Math.random(); 
+	audioModel.transpose = true; 
+	audioModel.musicbox.value = Math.random();
+}, 5000);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,13 +191,13 @@ var touchStatistics = {
 
 	computeGroupActivity: function() {
 
-		var groupActivity = [0, 0, 0, 0]
+		var groupActivity = [0, 0, 0, 0]; 
 
 		touchBuffer.forEach(function(item) {
 			groupActivity[item.group] += 1;  
 		}); 
 
-		// Turn to %
+		// Turn to %, hard-coded touch buffer size (48)
 		groupActivity = _.map(groupActivity, function(group) {
 			return parseInt((group / 48) * 100, 10); 
 		}); 
@@ -393,6 +443,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				// universe.update(universeMap); 
 
 			}, 66);
+		
 
 			function quickColor(value, toAdd) {
 
@@ -403,6 +454,54 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			}
 
 		};
+
+		_.each(audioModel, function(item){
+
+			watch(item, function(prop, action, newValue, oldValue) {
+
+				WatchJS.noMore = true; 
+
+				// console.log(item, prop, action, newValue); 
+
+				var eV = {
+					audioModel: item
+				}; 
+
+				ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
+					if(error) console.error(error); 
+				});
+
+				if (prop === "transpose") {
+					audioModel.transpose = false; 
+				} 
+			
+			}); 
+
+		});
+
+		/* 
+		watch(audioModel, function(prop, action, newValue, oldValue, blah, bloo){
+
+			WatchJS.noMore = true; 
+
+			console.log(prop, action, newValue, blah, bloo); 
+
+			var eV = {
+				audioModel: audioModel.prop
+			}; 
+
+			ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
+				if(error) console.error(error); 
+			});
+
+			if (prop === "transpose") {
+				audioModel.transpose = false; 
+			} 
+			
+
+		},1);
+		*/ 
+
 
 	});
 
