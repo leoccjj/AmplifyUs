@@ -76,13 +76,8 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
         });
 
         wsserver.on('audio', function(audioEvent) {
-
-        	console.log('audioEvent', audioEvent.audioModel); 
-
         	var model = audioEvent.audioModel;
-
         	dispatch(model);
-
         }); 
 
         wsserver.connect(appConfig.wsURL);
@@ -103,12 +98,33 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		}, true);
 
 		function dispatch(model) {
-			if (model.instrument) {
-				audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
+
+			console.log(model);
+
+			if (model.wait) {
+
+				var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
+
+				console.log(DMAF.Processors.getMusicController().player.getCurrentBeatTime()); 
+				console.log(nextTime);
+
+				//setTimeout(function() {
+					console.log("dispatch", model.key); 
+					audioEngine.dispatch(model.key, model.value, nextTime); 
+				//}, nextTime); 
+				
 			}
+
 			else {
-				audioEngine.dispatch(model.key); 
+				if (model.instrument) {
+					audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
+				}
+				else {
+					audioEngine.dispatch(model.key); 
+				}
 			}
+			
+
 		}
 
 	}

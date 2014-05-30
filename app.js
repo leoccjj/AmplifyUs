@@ -88,7 +88,11 @@ var audioModel = {
 		key: "",
 		instrument: ""
 	},
-	tempo: 115, 
+	tempo: {
+		value: 115, 
+		key: "tempo",
+		wait: true
+	}, 
 	celloIntensity: {
 		value: 0.0,
 		key: "intensity", 
@@ -287,6 +291,12 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 	var logMessage = "Touch @ " + touch.group + " : " + now.valueOf(); 
 	console.log(logMessage.yellow); 
+
+	if (touchStatistics.touchActivity >= 0.75 ) {
+		audioModel.tempo.value = 130;
+	} else {
+		audioModel.tempo.value = 115; 
+	}
 
 }; 
 
