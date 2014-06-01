@@ -257,3 +257,28 @@ app.directive('colorVisualizer', function () {
 	};
 
 });
+
+app.directive('lightVisualizer', function () {
+
+	return {
+
+		restrict: 'AE',
+		scope: {
+			model: '='
+		},
+
+		templateUrl: "partials/light-visualizer", 
+
+		link: function (scope, element, attrs) {
+
+			scope.$watch('model', function (newVal, oldVal) {
+
+				console.log(newVal); 
+				
+			}, true);
+
+		}
+
+	};
+
+});

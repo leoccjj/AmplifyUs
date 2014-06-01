@@ -71,10 +71,12 @@ var universeMap = {};
 
 var colorModel = new Array();
 
-colorModel[0] = new HSVColor(0,0,0); 
-colorModel[1] = new HSVColor(0,0,0); 
-colorModel[2] = new HSVColor(0,0,0); 
-colorModel[3] = new HSVColor(0,0,0); 
+colorModel[0] = chroma(0, 0, 0, 'hsv');
+colorModel[1] = chroma(0, 0, 0, 'hsv');
+colorModel[2] = chroma(0, 0, 0, 'hsv');
+colorModel[3] = chroma(0, 0, 0, 'hsv');
+
+var slowScale = chroma.scale('PuBu').out('hex'); 
 
 var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
 
@@ -94,8 +96,6 @@ setInterval(function(){
 
 var tickTimer = null; 
 var colorTimer = null; 
-
-var slowScale = chroma.scale('PuBu').out('hsv'); 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -154,6 +154,7 @@ Amplifier.prototype.handleTouches = function(touch) {
 		// Handle Column Mappings ?? 
 	
 		// Check for hand connection event conditions (bridging panels 2 + 3 together)
+		// ToDo: Debounce the detection event (set a flag+timer or something?)
 		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
 			
 			handConnectionEvents.push(newTouchEvent);
@@ -298,29 +299,17 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			console.log(dmxOptions); 
 
-			console.log(slowScale.mode('hsv')(0.5)); 
-
-			//colorModel[0].H = util.random_float_normalized(); 
-			//colorModel[1].H = util.random_float_normalized(); 
-			//colorModel[2].H = util.random_float_normalized(); 
-			//colorModel[3].H = util.random_float_normalized(); 
-
 			// POSITION ON SCALE (0.50);
-			
-			colorModel[0].H = slowScale.mode('hsv')(0.50)[0] / 360; 
-			colorModel[1].H = slowScale.mode('hsv')(0.50)[0] / 360; 
-			colorModel[2].H = slowScale.mode('hsv')(0.50)[0] / 360; 
-			colorModel[3].H = slowScale.mode('hsv')(0.50)[0] / 360; 
 
-			colorModel[0].S = slowScale.mode('hsv')(0.50)[1];
-			colorModel[1].S = slowScale.mode('hsv')(0.50)[1];
-			colorModel[2].S = slowScale.mode('hsv')(0.50)[1];
-			colorModel[3].S = slowScale.mode('hsv')(0.50)[1];
+			colorModel[0] = slowScale.mode('hsv')(0.30);
+			colorModel[1] = slowScale.mode('hsv')(0.45);
+			colorModel[2] = slowScale.mode('hsv')(0.65);
+			colorModel[3] = slowScale.mode('hsv')(0.85); 
 
-			colorModel[0].V = slowScale.mode('hsv')(0.50)[2]; 
-			colorModel[1].V = slowScale.mode('hsv')(0.50)[2];
-			colorModel[2].V = slowScale.mode('hsv')(0.50)[2];
-			colorModel[3].V = slowScale.mode('hsv')(0.50)[2];
+			//console.log(chroma(colorModel[0]).hsv()); 
+
+			//console.log("What", colorModel[0]);
+			//console.log("Color Model", chroma(colorModel[0]).hex());
 
 			var counter = 0;
 
@@ -330,25 +319,25 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				var idx = 0;
 				counter++; 
 
+				// console.log(chroma.hsv(colorModel[0]).rgb());
+
+				console.log(dmxOptions.universeSize);
+				
 				// Universe increments in groups of six because
 				// that's how many channels the lights use (we only use the first three)
-				// * 255 to turn the normalized RGB value into DMX range 
+				// * 255 to turn the normalized RGB value into DMX range
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
-					universeMap[i] = colorModel[idx].toRgb().R * 255; 
-					universeMap[i+1] = colorModel[idx].toRgb().G * 255; 
-					universeMap[i+2] = colorModel[idx].toRgb().B * 255; 
-					//console.log(universeMap[i]);
+					universeMap[i]   = chroma.hsv(colorModel[idx]).rgb()[0];
+					universeMap[i+1] = chroma.hsv(colorModel[idx]).rgb()[1];
+					universeMap[i+2] = chroma.hsv(colorModel[idx]).rgb()[2];
+					// console.log(universeMap[i]);
 					idx++;
 				}
+
 
 				var eV = {
 					colorModel: colorModel
 				}; 
-
-				colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0.0002, 0.0025)); 
-				colorModel[1].H = quickColor(colorModel[1].H, util.random_float(0.0001, 0.00065)); 
-				colorModel[2].H = quickColor(colorModel[2].H, util.random_float(0.0001, 0.0015)); 
-				colorModel[3].H = quickColor(colorModel[3].H, util.random_float(0.0001, 0.0050)); 
 
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
@@ -359,7 +348,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			}, 66);
 		
-
+	
+			/* 
 			function quickColor(value, toAdd) {
 
 				var result = ((value * 100) + (toAdd * 100)) % 100;
@@ -367,6 +357,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				return parseFloat(result / 100, 10);
 
 			}
+			*/
 
 		};
 
