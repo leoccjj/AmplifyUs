@@ -1,3 +1,5 @@
 div#light-visualizer
-	div(ng-repeat="color in model")
-		.color-block(ng-style="{'background-color':color}")
+	.color-block(ng-style="{'background-color': model[3]}") Third Level (top)
+	.color-block(ng-style="{'background-color': model[2]}") Second Level
+	.color-block(ng-style="{'background-color': model[1]}") First Level
+	.color-block(ng-style="{'background-color': model[0]}") Ground Floor

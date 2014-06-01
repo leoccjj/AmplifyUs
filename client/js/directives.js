@@ -271,11 +271,14 @@ app.directive('lightVisualizer', function () {
 
 		link: function (scope, element, attrs) {
 
+			/* 
 			scope.$watch('model', function (newVal, oldVal) {
 
-				console.log(newVal); 
+				// console.log(newVal); 
 				
 			}, true);
+
+			*/ 
 
 		}
 

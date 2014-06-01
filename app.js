@@ -312,6 +312,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			//console.log("Color Model", chroma(colorModel[0]).hex());
 
 			var counter = 0;
+			var sinPosition = 0; 
 
 			// TODO: Tighten this loop as much as possible
 			colorTimer = setInterval(function() {
@@ -319,10 +320,18 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				var idx = 0;
 				counter++; 
 
+				var p1 = Math.abs(Math.sin(counter / 100 )); 
+				var p2 = Math.abs(Math.sin(counter / 90 )); 
+				var p3 = Math.abs(Math.sin(counter / 80 )); 
+				var p4 = Math.abs(Math.sin(counter / 70 )); 
+
+				colorModel[0] = slowScale.mode('hsv')(generateOffset(p1));
+				colorModel[1] = slowScale.mode('hsv')(generateOffset(p2));
+				colorModel[2] = slowScale.mode('hsv')(generateOffset(p3));
+				colorModel[3] = slowScale.mode('hsv')(generateOffset(p4)); 
+
 				// console.log(chroma.hsv(colorModel[0]).rgb());
 
-				console.log(dmxOptions.universeSize);
-				
 				// Universe increments in groups of six because
 				// that's how many channels the lights use (we only use the first three)
 				// * 255 to turn the normalized RGB value into DMX range
@@ -333,7 +342,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					// console.log(universeMap[i]);
 					idx++;
 				}
-
 
 				var eV = {
 					colorModel: colorModel
@@ -346,9 +354,18 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				// SEND DATA VIA DMX!!! Do not forget to uncomment
 				// universe.update(universeMap); 
 
-			}, 66);
+			}, 33);
 		
-	
+			function generateOffset(value) {
+
+				var result = (value * 100) % 100;
+
+				var floatResult = parseFloat(result / 100, 10);
+
+				return floatResult; 
+
+			};
+
 			/* 
 			function quickColor(value, toAdd) {
 
