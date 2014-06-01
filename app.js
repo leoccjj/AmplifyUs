@@ -68,8 +68,8 @@ app.get('/partials/:name', routes.partials);
 var universeMap = {}; 
 
 var parameters = {
-	decayRate: .0025, 
-	addRate: 0.025,
+	decayRate: .00125, 
+	addRate: 0.0125,
 };
 
 var colorModel = new Array();
@@ -79,17 +79,22 @@ colorModel[1] = new HSVColor(0,0,0);
 colorModel[2] = new HSVColor(0,0,0); 
 colorModel[3] = new HSVColor(0,0,0); 
 
+var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
+
+var handConnectionEvents = new buf(2); 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 var audioModel = {
+
 	gain: {
 		value: 0.25,
 		key: "",
 		instrument: ""
 	},
 	tempo: {
-		value: 115, 
+		value: 105, 
 		key: "tempo",
 		wait: true
 	}, 
@@ -147,13 +152,17 @@ var audioModel = {
 		value: 0.0,
 		key: "delay_wet", 
 		instrument: "delay"
-	}, 
-	delaySync: "8D",
-	mute: false, 
+	},
+	mute: {
+		value: false,
+		key: "mute", 
+	},
 	transpose: {
 		value: false,
 		key: "transpose", 
 	}, 
+	delaySync: "8D"
+
 }; 
 
 setInterval(function(){
@@ -280,25 +289,47 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 	var now = moment();
 
-	var tick = {}; 
+	if (touch.event == "touchdown") {
 
-	tick.eventType = touch.eventType; 
-	tick.group = touch.group; 
-	tick.sensorPin = touch.sensorPin; 
+		var newTouchEvent = {}; 
 
-	tick.timestamp = moment().valueOf();
+		newTouchEvent.eventType = touch.eventType; 
+		newTouchEvent.group = touch.group; 
+		newTouchEvent.sensorPin = touch.sensorPin || -1; 
 
-	touchBuffer.push(tick);
+		newTouchEvent.timestamp = moment().valueOf();
 
-	touchStatistics.add(); 
+		touchBuffer.push(newTouchEvent);
 
-	var logMessage = "Touch @ " + touch.group + " : " + now.valueOf(); 
-	console.log(logMessage.yellow); 
+		touchStatistics.add(); 
 
-	if (touchStatistics.touchActivity >= 0.75 ) {
-		audioModel.tempo.value = 130;
-	} else {
-		audioModel.tempo.value = 115; 
+		var logMessage = "Touch: " + touch.group + "\tTime: " + now.valueOf() + "\t Sensor: " + newTouchEvent.sensorPin ; 
+		console.log(logMessage.green); 
+
+		// Check connection event
+		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
+			
+			handConnectionEvents.push(newTouchEvent);
+
+			if (!handConnectionEvents.group[1].group) return; 
+
+			// Different groups (2 or 3)
+			if (handConnectionEvents[0].group !== handConnectionEvents.group[1]) {
+
+				// Make sure related in time
+				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp < 1000) {
+					// Go crazy!! 
+				}
+			}
+
+		}
+
+	}
+
+	else if (touch.event == "touchup") {
+
+		// Do nothing for now
+
 	}
 
 }; 
@@ -340,7 +371,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			var newMessage = JSON.parse(message);
 
-			if (newMessage.event == "touchdown") {
+			if (newMessage.event == "touchup" || newMessage.event == "touchdown") {
 				myAmplifier.handleTouches(newMessage); 
 			}
 
@@ -376,6 +407,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		};
 
+		function updateTempo() {
+			var newTempo = util.map(touchStatistics.touchActivity, 0.0, 1.0, 105, 125); 
+			audioModel.tempo.value = newTempo;
+		}; 
+
+		var throttledTempo = _.throttle(updateTempo, 5000);
+
 		// Loop to update the GUI
 		function startTicking() {
 
@@ -393,7 +431,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					if(error) console.error(error); 
 				});
-
+				
+				throttledTempo(); 
+				
 			}, 125); 
 	
 		}; 
@@ -499,15 +539,21 @@ Amplifier.prototype.setupOSC = function(options) {
 	var core = this;
 
 	this.oscServer = {};
-	this.oscClient = {};
+	this.oscClients = new Array();
 
 	if (options.inputPort)
 		this.oscServer = new osc.Server(options.inputPort, '127.0.0.1');
 		console.log('[OSC - Listening]: '.green, options);
 
 	if (options.outputPort) {
+
 		// Send to the entire subnet? 
-		this.oscClient = new osc.Client('224.0.0.0', options.outputPort);
+
+		_.each(GalileoAddresses, function(addr) {
+			this.oscClients.push(new osc.Client(addr, options.outputPort));
+		}, this); 
+
+		// this.oscClient = new osc.Client('224.0.0.0', options.outputPort);
 	}
 
 	this.oscServer.on('message', function(msg, rinfo) {

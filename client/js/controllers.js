@@ -110,8 +110,8 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 				//setTimeout(function() {
 					console.log("dispatch", model.key); 
-					audioEngine.dispatch(model.key, model.value, nextTime); 
-				//}, nextTime); 
+					audioEngine.dispatch(model.key, model.value); 
+				// }, nextTime); 
 				
 			}
 
