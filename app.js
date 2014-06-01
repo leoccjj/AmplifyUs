@@ -150,13 +150,16 @@ var audioModel = {
 	}, 
 	delaySync: "8D",
 	mute: false, 
-	transpose: false, 
+	transpose: {
+		value: false,
+		key: "transpose", 
+	}, 
 }; 
 
 setInterval(function(){
 	//audioModel.gain = Math.random(); 
-	audioModel.transpose = true; 
-	audioModel.musicbox.value = Math.random();
+	audioModel.transpose.value = true; 
+	audioModel.musicbox.value = 1.0; //Math.random();
 }, 5000);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -471,8 +474,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				WatchJS.noMore = true; 
 
-				// console.log(item, prop, action, newValue); 
-
 				var eV = {
 					audioModel: item
 				}; 
@@ -481,37 +482,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-				if (prop === "transpose") {
-					audioModel.transpose = false; 
+				if (item.key === "transpose") {
+					item.value = false; 
 				} 
 			
 			}); 
 
 		});
-
-		/* 
-		watch(audioModel, function(prop, action, newValue, oldValue, blah, bloo){
-
-			WatchJS.noMore = true; 
-
-			console.log(prop, action, newValue, blah, bloo); 
-
-			var eV = {
-				audioModel: audioModel.prop
-			}; 
-
-			ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
-				if(error) console.error(error); 
-			});
-
-			if (prop === "transpose") {
-				audioModel.transpose = false; 
-			} 
-			
-
-		},1);
-		*/ 
-
 
 	});
 
