@@ -25,6 +25,8 @@ var watch = WatchJS.watch;
 var unwatch = WatchJS.unwatch;
 var callWatchers = WatchJS.callWatchers;
 
+var touchStatistics = require("./touch_stats");
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +46,8 @@ var app = module.exports = express();
 app.set('port', process.env.PORT || 6005);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
-app.use(express.logger('dev'));
+//app.use(express.logger('dev'));
+//app.use(express.errorHandler()); // Dev/Debug Helper 
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 app.use(express.static(path.join(__dirname, 'client')));
@@ -54,10 +57,6 @@ app.set('view options', {debug: true});
 app.locals.pretty = true; // Express 3.x
 app.locals.doctype = 'html'; // Express 3.x
 app.locals.layout = false; // Cruft from Express 2.x
-app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(express.cookieParser());
-app.use(express.errorHandler()); // Dev/Debug Helper 
 
 app.get('/', routes.index);
 app.get('/partials/:name', routes.partials);
@@ -66,11 +65,6 @@ app.get('/partials/:name', routes.partials);
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 var universeMap = {}; 
-
-var parameters = {
-	decayRate: .00125, 
-	addRate: 0.0125,
-};
 
 var colorModel = new Array();
 
@@ -82,6 +76,9 @@ colorModel[3] = new HSVColor(0,0,0);
 var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
 
 var handConnectionEvents = new buf(2); 
+
+var numTouchPanels = 4;
+var numTouchStripsPerPanel = 5;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,86 +165,11 @@ var audioModel = {
 setInterval(function(){
 	//audioModel.gain = Math.random(); 
 	audioModel.transpose.value = true; 
-	audioModel.musicbox.value = 1.0; //Math.random();
+	//audioModel.musicbox.value = 1.0; //Math.random();
 }, 5000);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-var touchBuffer = new buf(48); 
-
-var touchStatistics = {
-
-	touchActivity: 0, 
-
-	//  Inter-onset duration 
-	computeMeanInterOnsetDurations: function() {
-
-		var touchesInBuffer = 0; 
-		var interOnsetDuration = 0; 
-
-		var tMinusOne = 0; 
-
-		touchBuffer.forEach(function(item) {
-
-			if (tMinusOne !== 0) 
-				interOnsetDuration += (item.timestamp - tMinusOne);
-
-			tMinusOne = item.timestamp; 
-
-			touchesInBuffer++; 
-
-		}); 
-
-		var meanInterOnsetDuration = interOnsetDuration / touchesInBuffer; 
-
-		return meanInterOnsetDuration; 
-
-	}, 
-
-	computeGroupActivity: function() {
-
-		var groupActivity = [0, 0, 0, 0]; 
-
-		touchBuffer.forEach(function(item) {
-			groupActivity[item.group] += 1;  
-		}); 
-
-		// Turn to %, hard-coded touch buffer size (48)
-		groupActivity = _.map(groupActivity, function(group) {
-			return parseInt((group / 48) * 100, 10); 
-		}); 
-
-		return groupActivity; 
-
-	}, 
-
-	add: function() {
-
-		if ( (this.touchActivity + parameters.addRate) <= 1) 
-			this.touchActivity += parameters.addRate; 
-
-		return this.touchActivity; 
-
-	},
-
-	decay: function() {
-
-		// Decay if nonzero 
-		if ( (this.touchActivity - parameters.decayRate) > 0) {
-			this.touchActivity -= parameters.decayRate;
-		}
-
-		// Start popping off touches if nothing
-		if (this.touchActivity <= .01) {
-			touchBuffer.shift();
-		}
-
-		return this.touchActivity; 
-
-	}
-
-}
 
 var tickTimer = null; 
 var colorTimer = null; 
@@ -299,13 +221,15 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 		newTouchEvent.timestamp = moment().valueOf();
 
-		touchBuffer.push(newTouchEvent);
+		touchStatistics.addEvent(newTouchEvent);
 
 		touchStatistics.add(); 
 
 		var logMessage = "Touch: " + touch.group + "\tTime: " + now.valueOf() + "\t Sensor: " + newTouchEvent.sensorPin ; 
 		console.log(logMessage.green); 
 
+		// Handle Column Mappings ?? 
+	
 		// Check connection event
 		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
 			
@@ -363,7 +287,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		startTicking(); 	// Client control/notification
 		startColorLoop();   // Main control loop
 
-		ws.send(JSON.stringify({event: parameters, name: "config"}), function(error){
+		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
 			if(error) console.log(error); 
 		}); 
 
@@ -376,7 +300,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			}
 
 			else if (newMessage.event == "config") {
-				parameters = newMessage.config; 
+				touchStatistics.parameters = newMessage.config; 
 			}
 
 		});
@@ -431,8 +355,12 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					if(error) console.error(error); 
 				});
+
+
+				// var musicboxIntensity = util.map(touchStatistics.touchActivity, 0.0, 1.0, 0.25, 1.0); 
+				// audioModel.musicbox.value = musicboxIntensity;
 				
-				throttledTempo(); 
+				// throttledTempo(); 
 				
 			}, 125); 
 	
