@@ -3,12 +3,14 @@ var _ = require('underscore');
 
 var touchBuffer = new CircularBuffer(48); 
 
-var parameters = {
-	decayRate: .00125, 
-	addRate: 0.0125,
-};
+// ToDo: Per Sensor Add/Decay
 
 var touchStatistics = {
+
+	parameters: {
+		decayRate: .00125, 
+		addRate: 0.0125,
+	}, 
 
 	touchActivity: 0, 
 
@@ -58,8 +60,8 @@ var touchStatistics = {
 
 		// get last added event here! easy peasy.
 
-		if ( (this.touchActivity + parameters.addRate) <= 1) 
-			this.touchActivity += parameters.addRate; 
+		if ( (this.touchActivity + this.parameters.addRate) <= 1) 
+			this.touchActivity += this.parameters.addRate; 
 
 		return this.touchActivity; 
 
@@ -68,8 +70,8 @@ var touchStatistics = {
 	decay: function() {
 
 		// Decay if nonzero 
-		if ( (this.touchActivity - parameters.decayRate) > 0) {
-			this.touchActivity -= parameters.decayRate;
+		if ( (this.touchActivity - this.parameters.decayRate) > 0) {
+			this.touchActivity -= this.parameters.decayRate;
 		}
 
 		// Start popping off touches if nothing

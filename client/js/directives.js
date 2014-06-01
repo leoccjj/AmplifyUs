@@ -117,7 +117,7 @@ app.directive('colorVisualizer', function () {
 			if (colorMarker.H === 0) return; 
 
 			// 0 to circle Radius
-			var rad = circleRadius / 2; 
+			var rad = (colorMarker.S * circleRadius);//  / 2; 
 
 			var denormalizedHue = colorMarker.H * (Math.PI * 2); 
 

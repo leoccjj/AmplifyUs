@@ -25,6 +25,8 @@ var watch = WatchJS.watch;
 var unwatch = WatchJS.unwatch;
 var callWatchers = WatchJS.callWatchers;
 
+var chroma = require("chroma-js");
+
 var touchStatistics = require("./touch_stats");
 var audioModel = require("./audio_model");
 
@@ -93,6 +95,8 @@ setInterval(function(){
 var tickTimer = null; 
 var colorTimer = null; 
 
+var slowScale = chroma.scale('PuBu').out('hsv'); 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -149,7 +153,7 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 		// Handle Column Mappings ?? 
 	
-		// Check connection event
+		// Check for hand connection event conditions (bridging panels 2 + 3 together)
 		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
 			
 			handConnectionEvents.push(newTouchEvent);
@@ -160,7 +164,7 @@ Amplifier.prototype.handleTouches = function(touch) {
 			if (handConnectionEvents[0].group !== handConnectionEvents.group[1]) {
 
 				// Make sure related in time
-				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp < 1000) {
+				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp <= 1000) {
 					// Go crazy!! 
 				}
 			}
@@ -205,6 +209,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		startTicking(); 	// Client control/notification
 		startColorLoop();   // Main control loop
+
+		console.log(touchStatistics.parameters);
 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
 			if(error) console.log(error); 
@@ -268,13 +274,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				tick.timestamp = moment().valueOf();
 
 				tick.value = touchStatistics.decay();
+
 				tick.meanOnsetDuration = touchStatistics.computeMeanInterOnsetDurations(); 
 				tick.groupActivity = touchStatistics.computeGroupActivity(); 
 
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
 					if(error) console.error(error); 
 				});
-
 
 				// var musicboxIntensity = util.map(touchStatistics.touchActivity, 0.0, 1.0, 0.25, 1.0); 
 				// audioModel.musicbox.value = musicboxIntensity;
@@ -292,20 +298,29 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			console.log(dmxOptions); 
 
-			colorModel[0].H = util.random_float_normalized(); 
-			colorModel[1].H = util.random_float_normalized(); 
-			colorModel[2].H = util.random_float_normalized(); 
-			colorModel[3].H = util.random_float_normalized(); 
+			console.log(slowScale.mode('hsv')(0.5)); 
 
-			colorModel[0].S = 1; 
-			colorModel[1].S = 1;
-			colorModel[2].S = 1;
-			colorModel[3].S = 1;
+			//colorModel[0].H = util.random_float_normalized(); 
+			//colorModel[1].H = util.random_float_normalized(); 
+			//colorModel[2].H = util.random_float_normalized(); 
+			//colorModel[3].H = util.random_float_normalized(); 
 
-			colorModel[0].V = 1; 
-			colorModel[1].V = 1;
-			colorModel[2].V = 1;
-			colorModel[3].V = 1;
+			// POSITION ON SCALE (0.50);
+			
+			colorModel[0].H = slowScale.mode('hsv')(0.50)[0] / 360; 
+			colorModel[1].H = slowScale.mode('hsv')(0.50)[0] / 360; 
+			colorModel[2].H = slowScale.mode('hsv')(0.50)[0] / 360; 
+			colorModel[3].H = slowScale.mode('hsv')(0.50)[0] / 360; 
+
+			colorModel[0].S = slowScale.mode('hsv')(0.50)[1];
+			colorModel[1].S = slowScale.mode('hsv')(0.50)[1];
+			colorModel[2].S = slowScale.mode('hsv')(0.50)[1];
+			colorModel[3].S = slowScale.mode('hsv')(0.50)[1];
+
+			colorModel[0].V = slowScale.mode('hsv')(0.50)[2]; 
+			colorModel[1].V = slowScale.mode('hsv')(0.50)[2];
+			colorModel[2].V = slowScale.mode('hsv')(0.50)[2];
+			colorModel[3].V = slowScale.mode('hsv')(0.50)[2];
 
 			var counter = 0;
 
