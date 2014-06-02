@@ -14,6 +14,8 @@ var touchStatistics = {
 
 	touchActivity: 0, 
 
+	panelActivity: [0, 0, 0, 0], 
+
 	//  Inter-onset duration 
 	computeMeanInterOnsetDurations: function() {
 
@@ -58,7 +60,12 @@ var touchStatistics = {
 
 	add: function() {
 
-		// get last added event here! easy peasy.
+		var latestTouch = touchBuffer.last();
+		var groupActivity = this.panelActivity[latestTouch.group]; 
+
+		if ( (groupActivity + this.parameters.addRate) <= 1) {
+			this.panelActivity[latestTouch.group] += this.parameters.addRate; 
+		}
 
 		if ( (this.touchActivity + this.parameters.addRate) <= 1) 
 			this.touchActivity += this.parameters.addRate; 
@@ -74,10 +81,24 @@ var touchStatistics = {
 			this.touchActivity -= this.parameters.decayRate;
 		}
 
+		for (var i = 0; i < 4; i++) {
+
+			var activity = this.panelActivity[i];
+
+			if ( (activity - this.parameters.decayRate) > 0) {
+				this.panelActivity[i] -= this.parameters.decayRate;
+			}
+
+			// console.log(this.panelActivity[item.group]); 
+
+		}; 
+
 		// Start popping off touches if nothing
 		if (this.touchActivity <= .01) {
 			touchBuffer.shift();
 		}
+
+		console.log(this.panelActivity);
 
 		return this.touchActivity; 
 

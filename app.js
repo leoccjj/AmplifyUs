@@ -76,7 +76,8 @@ colorModel[1] = chroma(0, 0, 0, 'hsv');
 colorModel[2] = chroma(0, 0, 0, 'hsv');
 colorModel[3] = chroma(0, 0, 0, 'hsv');
 
-var slowScale = chroma.scale('PuBu').out('hex'); 
+//PuBu, Purples, YlGnBu, OrRd,, YlGnBu,
+var slowScale = chroma.scale('PuBuGn').out('hex'); 
 
 var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
 
