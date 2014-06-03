@@ -71,10 +71,10 @@ var universeMap = {};
 
 var colorModel = new Array();
 
-colorModel[0] = chroma(0, 0, 0, 'hsv');
-colorModel[1] = chroma(0, 0, 0, 'hsv');
-colorModel[2] = chroma(0, 0, 0, 'hsv');
-colorModel[3] = chroma(0, 0, 0, 'hsv');
+colorModel[0] = new HSVColor(0,0,0); 
+colorModel[1] = new HSVColor(0,0,0); 
+colorModel[2] = new HSVColor(0,0,0); 
+colorModel[3] = new HSVColor(0,0,0); 
 
 //PuBu, Purples, YlGnBu, OrRd, YlGnBu,
 
@@ -85,7 +85,13 @@ var colorScales = [
 	chroma.scale('OrRd').out('hex')
 ]; 
 
-var theScale = chroma.scale(['white', 'greenyellow', 'mediumblue', 'mediumpurple', 'lightyellow', 'orangered', 'darkred']).mode('hcl').out('hex');
+//var theScale = chroma.scale(['white', 'mediumblue', 'mediumpurple','orangered']).mode('hcl').out('hex');
+
+var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0', '#ff5400']);
+
+// theScale.domain([0, 10], 7);
+
+// 
 
 var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
 
@@ -323,17 +329,20 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			console.log(dmxOptions); 
 
-			// POSITION ON SCALE (0.50);
+			colorModel[0].H = 0.25; 
+			colorModel[1].H = 0.28;
+			colorModel[2].H = 0.31; 
+			colorModel[3].H = 0.34;
 
-			//colorModel[0] = slowScale.mode('hsv')(0.30);
-			//colorModel[1] = slowScale.mode('hsv')(0.45);
-			//colorModel[2] = slowScale.mode('hsv')(0.65);
-			//colorModel[3] = slowScale.mode('hsv')(0.85); 
+			colorModel[0].S = 1; 
+			colorModel[1].S = 1;
+			colorModel[2].S = 1;
+			colorModel[3].S = 1;
 
-			//console.log(chroma(colorModel[0]).hsv()); 
-
-			//console.log("What", colorModel[0]);
-			//console.log("Color Model", chroma(colorModel[0]).hex());
+			colorModel[0].V = 1; 
+			colorModel[1].V = 1;
+			colorModel[2].V = 1;
+			colorModel[3].V = 1;
 
 			var counter = 0;
 			var sinPosition = 0; 
@@ -347,66 +356,92 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				var idx = 0;
 				counter++; 
 
-				var p1 = touchStatistics.panelActivity[0];
-				var p2 = touchStatistics.panelActivity[1];
-				var p3 = touchStatistics.panelActivity[2];
-				var p4 = touchStatistics.panelActivity[3];;
+				var p1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.33, 1.0);
+				var p2 = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.33, 1.0);
+				var p3 = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.33, 1.0);
+				var p4 = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.33, 1.0);
 
 				colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
 
-				if (colorMode != lastColorMode) {
+				colorModel[0].S = p1; //bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360; 
+				colorModel[1].S = p2;
+				colorModel[2].S = p3;
+				colorModel[3].S = p4;
 
-					lastColorMode = colorMode; 
+				//console.log(bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360);
 
+				for (var i = 0; i < 4; i++){
+					//colorModel[i].H += util.random_float(0.0025, 0.0050);
+					colorModel[i].H = (bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + (i / 20); 
 				}
-
-				//console.log(colorMode); 
-
-				colorModel[0] = colorScales[colorMode].mode('hsv')(generateOffset(p1));
-				colorModel[1] = colorScales[colorMode].mode('hsv')(generateOffset(p2));
-				colorModel[2] = colorScales[colorMode].mode('hsv')(generateOffset(p3));
-				colorModel[3] = colorScales[colorMode].mode('hsv')(generateOffset(p4)); 
-
-
-				//colorModel[0] = theScale.mode('hsl')(generateOffset(p1));
-				//colorModel[1] = theScale.mode('hsl')(generateOffset(p2));
-				//colorModel[2] = theScale.mode('hsl')(generateOffset(p3));
-				//colorModel[3] = theScale.mode('hsl')(generateOffset(p4)); 
-
-				// console.log(colorModel);
-
-
-				// console.log(chroma.hsv(colorModel[0]).rgb());
 
 				// Universe increments in groups of six because
 				// that's how many channels the lights use (we only use the first three)
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
-					universeMap[i]   = chroma.hsv(colorModel[idx]).rgb()[0];
-					universeMap[i+1] = chroma.hsv(colorModel[idx]).rgb()[1];
-					universeMap[i+2] = chroma.hsv(colorModel[idx]).rgb()[2];
+
+					universeMap[i] = colorModel[idx].toRgb().R * 255; 
+					universeMap[i+1] = colorModel[idx].toRgb().G * 255; 
+					universeMap[i+2] = colorModel[idx].toRgb().B * 255; 
+
 					idx++;
+
 				}
 
 				var eV = {
-					colorModel: colorModel
+					colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
 				}; 
+
+				//console.log(eV);
 
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
 				});
 
+				//onsole.log(eV); 
+
+				for (var c = 0; c < myAmplifier.oscClients.length; c++) {
+
+					var R = colorModel[c].toRgb().R * 255; 
+					var G = colorModel[c].toRgb().G * 255; 
+					var B = colorModel[c].toRgb().B * 255; 
+
+					myAmplifier.oscClients[c].send(R.toString() + "|" + G.toString() + "|" + B.toString());
+
+				}
+
 				// SEND DATA VIA DMX!!! Do not forget to uncomment
 				// universe.update(universeMap); 
 
-			}, 66);
+			}, 33);
 		
 			function generateOffset(value) {
 
+				// rescale to colors / 4 (25%)
+
+				// WHat happens when I switch zones?
+
+				//var minZone = parseFloat(colorMode / 4, 10); 
+
+				//var mappedValue = util.map(value, 0.0, 1.0, 0.0, 0.25); 
+
+				//var mappedValue = util.map(mappedValue, 0.0, 0.25, minZone, 0.25 + minZone); 
+
+				// var withOffset = mappedValue + util.map(touchStatistics.touchActivity, 0.0, 1.0, 0.0, 0.25); 
+
+				//var withOffset = mappedValue + parseFloat(colorMode / 4, 10); 
+
+				//console.log(mappedValue);
+
+				return value; 
+
+				/* 
 				var result = (value * 100) % 100;
 
 				var floatResult = parseFloat(result / 100, 10);
 
-				return floatResult; 
+				return floatResult;
+
+				*/ 
 
 			};
 
