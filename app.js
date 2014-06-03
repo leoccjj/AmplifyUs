@@ -76,8 +76,16 @@ colorModel[1] = chroma(0, 0, 0, 'hsv');
 colorModel[2] = chroma(0, 0, 0, 'hsv');
 colorModel[3] = chroma(0, 0, 0, 'hsv');
 
-//PuBu, Purples, YlGnBu, OrRd,, YlGnBu,
-var slowScale = chroma.scale('PuBuGn').out('hex'); 
+//PuBu, Purples, YlGnBu, OrRd, YlGnBu,
+
+var colorScales = [
+	chroma.scale('YlGnBu').out('hex'),
+	chroma.scale('Purples').out('hex'),
+	chroma.scale('PuBu').out('hex'), 
+	chroma.scale('OrRd').out('hex')
+]; 
+
+var theScale = chroma.scale(['white', 'greenyellow', 'mediumblue', 'mediumpurple', 'lightyellow', 'orangered', 'darkred']).mode('hcl').out('hex');
 
 var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
 
@@ -284,9 +292,24 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-				// var musicboxIntensity = util.map(touchStatistics.touchActivity, 0.0, 1.0, 0.25, 1.0); 
-				// audioModel.musicbox.value = musicboxIntensity;
-				
+				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.25, 1.0); 
+				audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
+
+				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.025, 0.20); 
+				audioModel.patatap_b.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0); 
+
+				audioModel.rhodesIntensity.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
+				audioModel.patatap_c.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
+
+				audioModel.patatap_a.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
+				audioModel.vibraphoneIntensity.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
+
+				if (touchStatistics.touchActivity >= .80) {
+					audioModel.delaySync = "4";
+				} else {
+					audioModel.delaySync = "8D"; 
+				}
+
 				// throttledTempo(); 
 				
 			}, 125); 
@@ -302,10 +325,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			// POSITION ON SCALE (0.50);
 
-			colorModel[0] = slowScale.mode('hsv')(0.30);
-			colorModel[1] = slowScale.mode('hsv')(0.45);
-			colorModel[2] = slowScale.mode('hsv')(0.65);
-			colorModel[3] = slowScale.mode('hsv')(0.85); 
+			//colorModel[0] = slowScale.mode('hsv')(0.30);
+			//colorModel[1] = slowScale.mode('hsv')(0.45);
+			//colorModel[2] = slowScale.mode('hsv')(0.65);
+			//colorModel[3] = slowScale.mode('hsv')(0.85); 
 
 			//console.log(chroma(colorModel[0]).hsv()); 
 
@@ -314,6 +337,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			var counter = 0;
 			var sinPosition = 0; 
+			var colorMode = 0; 
+			var lastColorMode = 0; 
+			var transition = 0; 
 
 			// TODO: Tighten this loop as much as possible
 			colorTimer = setInterval(function() {
@@ -321,26 +347,43 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				var idx = 0;
 				counter++; 
 
-				var p1 = Math.abs(Math.sin(counter / 100 )); 
-				var p2 = Math.abs(Math.sin(counter / 90 )); 
-				var p3 = Math.abs(Math.sin(counter / 80 )); 
-				var p4 = Math.abs(Math.sin(counter / 70 )); 
+				var p1 = touchStatistics.panelActivity[0];
+				var p2 = touchStatistics.panelActivity[1];
+				var p3 = touchStatistics.panelActivity[2];
+				var p4 = touchStatistics.panelActivity[3];;
 
-				colorModel[0] = slowScale.mode('hsv')(generateOffset(p1));
-				colorModel[1] = slowScale.mode('hsv')(generateOffset(p2));
-				colorModel[2] = slowScale.mode('hsv')(generateOffset(p3));
-				colorModel[3] = slowScale.mode('hsv')(generateOffset(p4)); 
+				colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
+
+				if (colorMode != lastColorMode) {
+
+					lastColorMode = colorMode; 
+
+				}
+
+				//console.log(colorMode); 
+
+				colorModel[0] = colorScales[colorMode].mode('hsv')(generateOffset(p1));
+				colorModel[1] = colorScales[colorMode].mode('hsv')(generateOffset(p2));
+				colorModel[2] = colorScales[colorMode].mode('hsv')(generateOffset(p3));
+				colorModel[3] = colorScales[colorMode].mode('hsv')(generateOffset(p4)); 
+
+
+				//colorModel[0] = theScale.mode('hsl')(generateOffset(p1));
+				//colorModel[1] = theScale.mode('hsl')(generateOffset(p2));
+				//colorModel[2] = theScale.mode('hsl')(generateOffset(p3));
+				//colorModel[3] = theScale.mode('hsl')(generateOffset(p4)); 
+
+				// console.log(colorModel);
+
 
 				// console.log(chroma.hsv(colorModel[0]).rgb());
 
 				// Universe increments in groups of six because
 				// that's how many channels the lights use (we only use the first three)
-				// * 255 to turn the normalized RGB value into DMX range
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
 					universeMap[i]   = chroma.hsv(colorModel[idx]).rgb()[0];
 					universeMap[i+1] = chroma.hsv(colorModel[idx]).rgb()[1];
 					universeMap[i+2] = chroma.hsv(colorModel[idx]).rgb()[2];
-					// console.log(universeMap[i]);
 					idx++;
 				}
 
@@ -355,7 +398,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				// SEND DATA VIA DMX!!! Do not forget to uncomment
 				// universe.update(universeMap); 
 
-			}, 33);
+			}, 66);
 		
 			function generateOffset(value) {
 
@@ -366,16 +409,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				return floatResult; 
 
 			};
-
-			/* 
-			function quickColor(value, toAdd) {
-
-				var result = ((value * 100) + (toAdd * 100)) % 100;
-
-				return parseFloat(result / 100, 10);
-
-			}
-			*/
 
 		};
 

@@ -10,6 +10,8 @@ var touchStatistics = {
 	parameters: {
 		decayRate: .00125, 
 		addRate: 0.0125,
+		panelDecay: 0,
+		panelAdd: 0, 
 	}, 
 
 	touchActivity: 0, 
@@ -86,7 +88,8 @@ var touchStatistics = {
 			var activity = this.panelActivity[i];
 
 			if ( (activity - this.parameters.decayRate) > 0) {
-				this.panelActivity[i] -= this.parameters.decayRate;
+				this.panelActivity[i] -= (this.parameters.decayRate);
+				// this.panelActivity[i] = this.panelActivity[i].toFixed(6); 
 			}
 
 			// console.log(this.panelActivity[item.group]); 
@@ -98,7 +101,7 @@ var touchStatistics = {
 			touchBuffer.shift();
 		}
 
-		console.log(this.panelActivity);
+		//console.log(this.panelActivity);
 
 		return this.touchActivity; 
 
