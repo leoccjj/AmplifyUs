@@ -92,8 +92,8 @@ var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0'
 // theScale.domain([0, 10], 7);
 
 // 
-
-var GalileoAddresses = ['192.168.1.105', '192.168.1.106', '192.168.1.107', '192.168.1.108']; 
+ 
+var GalileoAddresses = ['192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104']; 
 
 var handConnectionEvents = new buf(2); 
 
@@ -105,9 +105,11 @@ var numTouchStripsPerPanel = 5;
 
 setInterval(function(){
 	//audioModel.gain = Math.random(); 
+	audioModel.tempo.value = 128; 
+	audioModel.delaySync = "4";
 	audioModel.transpose.value = true; 
 	//audioModel.musicbox.value = 1.0; //Math.random();
-}, 5000);
+}, 9000);
 
 var tickTimer = null; 
 var colorTimer = null; 
@@ -391,26 +393,21 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
 				}; 
 
-				//console.log(eV);
-
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
 					if(error) console.error(error); 
 				});
-
-				//onsole.log(eV); 
-
 				for (var c = 0; c < myAmplifier.oscClients.length; c++) {
 
 					var R = colorModel[c].toRgb().R * 255; 
 					var G = colorModel[c].toRgb().G * 255; 
 					var B = colorModel[c].toRgb().B * 255; 
 
-					myAmplifier.oscClients[c].send(R.toString() + "|" + G.toString() + "|" + B.toString());
+					myAmplifier.oscClients[c].send("p|" + R.toString() + "|" + G.toString() + "|" + B.toString());
 
 				}
 
-				// SEND DATA VIA DMX!!! Do not forget to uncomment
-				// universe.update(universeMap); 
+				//SEND DATA VIA DMX!!! Do not forget to uncomment
+				if (dmxOptions.live) universe.update(universeMap); 
 
 			}, 33);
 		

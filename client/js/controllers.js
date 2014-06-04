@@ -99,7 +99,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		function dispatch(model) {
 
-			// console.log(model);
+			//console.log(model);
 
 			if (model.wait) {
 
