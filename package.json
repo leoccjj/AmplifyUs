@@ -38,6 +38,7 @@
     "twitter": "~0.2.9",
     "twitter-ng": "~0.6.2",
     "watchjs": "0.0.0",
-    "chroma-js": "~0.5.7"
+    "chroma-js": "~0.5.7",
+    "oscillators": "~1.0.0"
   }
 }

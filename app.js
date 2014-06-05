@@ -30,6 +30,9 @@ var chroma = require("chroma-js");
 var touchStatistics = require("./touch_stats");
 var audioModel = require("./audio_model");
 
+var oz = require('oscillators');
+var frequency = 0.1;
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -347,55 +350,48 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			colorModel[3].V = 1;
 
 			var counter = 0;
-			var sinPosition = 0; 
 			var colorMode = 0; 
-			var lastColorMode = 0; 
-			var transition = 0; 
+			var p1, p2, p3, p4; 
+			var osc1, osc2, osc3, osc4; 
 
 			// TODO: Tighten this loop as much as possible
 			colorTimer = setInterval(function() {
 
-				var idx = 0;
-				counter++; 
+				// make the installation breathe a little via hue
+				osc1 = oz.sine(counter, .7500) * 0.025; 
+				osc2 = oz.sine(counter, .7500) * 0.025;
+				osc3 = oz.sine(counter, .7500) * 0.025;
+				osc4 = oz.sine(counter, .7500) * 0.025;
 
-				var p1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.33, 1.0);
-				var p2 = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.33, 1.0);
-				var p3 = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.33, 1.0);
-				var p4 = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.33, 1.0);
+				// separate the hue a bit 
+				var osc = [osc1, osc2 + .03 , osc3 + 0.06, osc4 + 0.09];
 
+				p1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.33, 1.0);
+				p2 = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.33, 1.0);
+				p3 = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.33, 1.0);
+				p4 = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.33, 1.0);
+
+				// Not used right now 
 				colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
 
-				colorModel[0].S = p1; //bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360; 
+				colorModel[0].S = p1;
 				colorModel[1].S = p2;
 				colorModel[2].S = p3;
 				colorModel[3].S = p4;
 
-				//console.log(bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360);
-
 				for (var i = 0; i < 4; i++){
-					//colorModel[i].H += util.random_float(0.0025, 0.0050);
-					colorModel[i].H = (bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + (i / 20); 
+					colorModel[i].H = util.clamp((bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
 				}
 
-				// Universe increments in groups of six because
-				// that's how many channels the lights use (we only use the first three)
+				// Universe increments in groups of six because (that's how many channels the lights use (but, we only use the first three))
+				var idx = 0;
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
-
 					universeMap[i] = colorModel[idx].toRgb().R * 255; 
 					universeMap[i+1] = colorModel[idx].toRgb().G * 255; 
 					universeMap[i+2] = colorModel[idx].toRgb().B * 255; 
-
 					idx++;
-
 				}
 
-				var eV = {
-					colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
-				}; 
-
-				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
-					if(error) console.error(error); 
-				});
 				for (var c = 0; c < myAmplifier.oscClients.length; c++) {
 
 					var R = colorModel[c].toRgb().R * 255; 
@@ -406,41 +402,30 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				}
 
-				//SEND DATA VIA DMX!!! Do not forget to uncomment
-				if (dmxOptions.live) universe.update(universeMap); 
+				console.log(colorModel);
 
-			}, 33);
-		
-			function generateOffset(value) {
+				if (dmxOptions.live) universe.update(universeMap);
 
-				// rescale to colors / 4 (25%)
+				// Turn off when finished debugging 
+				if (true) {
 
-				// WHat happens when I switch zones?
+					var eV = {
+						colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
+					}; 
 
-				//var minZone = parseFloat(colorMode / 4, 10); 
+					ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
+						if(error) console.error(error); 
+					});
+				
+				}
 
-				//var mappedValue = util.map(value, 0.0, 1.0, 0.0, 0.25); 
+				counter = incrementCounter(counter); 
 
-				//var mappedValue = util.map(mappedValue, 0.0, 0.25, minZone, 0.25 + minZone); 
+			}, 32);
 
-				// var withOffset = mappedValue + util.map(touchStatistics.touchActivity, 0.0, 1.0, 0.0, 0.25); 
-
-				//var withOffset = mappedValue + parseFloat(colorMode / 4, 10); 
-
-				//console.log(mappedValue);
-
-				return value; 
-
-				/* 
-				var result = (value * 100) % 100;
-
-				var floatResult = parseFloat(result / 100, 10);
-
-				return floatResult;
-
-				*/ 
-
-			};
+			function incrementCounter(value) {
+				return value += 0.01; 
+			}
 
 		};
 
@@ -483,13 +468,10 @@ Amplifier.prototype.setupOSC = function(options) {
 
 	if (options.outputPort) {
 
-		// Send to the entire subnet? 
-
 		_.each(GalileoAddresses, function(addr) {
 			this.oscClients.push(new osc.Client(addr, options.outputPort));
 		}, this); 
 
-		// this.oscClient = new osc.Client('224.0.0.0', options.outputPort);
 	}
 
 	this.oscServer.on('message', function(msg, rinfo) {
