@@ -79,39 +79,22 @@ colorModel[1] = new HSVColor(0,0,0);
 colorModel[2] = new HSVColor(0,0,0); 
 colorModel[3] = new HSVColor(0,0,0); 
 
-//PuBu, Purples, YlGnBu, OrRd, YlGnBu,
-
-var colorScales = [
-	chroma.scale('YlGnBu').out('hex'),
-	chroma.scale('Purples').out('hex'),
-	chroma.scale('PuBu').out('hex'), 
-	chroma.scale('OrRd').out('hex')
-]; 
-
-//var theScale = chroma.scale(['white', 'mediumblue', 'mediumpurple','orangered']).mode('hcl').out('hex');
-
 var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0', '#ff5400']);
 
-// theScale.domain([0, 10], 7);
-
-// 
- 
 var GalileoAddresses = ['192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104']; 
 
 var handConnectionEvents = new buf(2); 
 
-var numTouchPanels = 4;
-var numTouchStripsPerPanel = 5;
+var memeMode = false; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Debugging only! 
 setInterval(function(){
-	//audioModel.gain = Math.random(); 
 	audioModel.tempo.value = 128; 
 	audioModel.delaySync = "4";
 	audioModel.transpose.value = true; 
-	//audioModel.musicbox.value = 1.0; //Math.random();
 }, 9000);
 
 var tickTimer = null; 
@@ -357,31 +340,40 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			// TODO: Tighten this loop as much as possible
 			colorTimer = setInterval(function() {
 
-				// make the installation breathe a little via hue
-				osc1 = oz.sine(counter, .7500) * 0.025; 
-				osc2 = oz.sine(counter, .7500) * 0.025;
-				osc3 = oz.sine(counter, .7500) * 0.025;
-				osc4 = oz.sine(counter, .7500) * 0.025;
+				if (memeMode) {
 
-				// separate the hue a bit 
-				var osc = [osc1, osc2 + .03 , osc3 + 0.06, osc4 + 0.09];
+					
 
-				p1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.33, 1.0);
-				p2 = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.33, 1.0);
-				p3 = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.33, 1.0);
-				p4 = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.33, 1.0);
+				} else {
 
-				// Not used right now 
-				colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
+					// make the installation breathe a little via hue
+					osc1 = oz.sine(counter, .7500) * 0.025; 
+					osc2 = oz.sine(counter, .7500) * 0.025;
+					osc3 = oz.sine(counter, .7500) * 0.025;
+					osc4 = oz.sine(counter, .7500) * 0.025;
 
-				colorModel[0].S = p1;
-				colorModel[1].S = p2;
-				colorModel[2].S = p3;
-				colorModel[3].S = p4;
+					// separate the hue a bit 
+					var osc = [osc1, osc2 + .03 , osc3 + 0.06, osc4 + 0.09];
 
-				for (var i = 0; i < 4; i++){
-					colorModel[i].H = util.clamp((bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
+					p1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.33, 1.0);
+					p2 = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.33, 1.0);
+					p3 = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.33, 1.0);
+					p4 = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.33, 1.0);
+
+					// Not used right now 
+					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
+
+					colorModel[0].S = p1;
+					colorModel[1].S = p2;
+					colorModel[2].S = p3;
+					colorModel[3].S = p4;
+
+					for (var i = 0; i < 4; i++){
+						colorModel[i].H = util.clamp((bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
+					}		
+
 				}
+
 
 				// Universe increments in groups of six because (that's how many channels the lights use (but, we only use the first three))
 				var idx = 0;
