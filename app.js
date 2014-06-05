@@ -11,7 +11,6 @@ var ws = require('ws');
 var osc = require('node-osc');  
 
 var DMX = require('dmx')
-var DMXAnimation = DMX.Animation;
 
 var routes = require('./routes');   
 
@@ -22,8 +21,6 @@ var HSVColor = require("./hsv_color");
 
 var WatchJS = require("watchjs")
 var watch = WatchJS.watch;
-var unwatch = WatchJS.unwatch;
-var callWatchers = WatchJS.callWatchers;
 
 var chroma = require("chroma-js");
 
@@ -38,8 +35,6 @@ var frequency = 0.1;
 
 var dmx = new DMX();
 
-// name, driver, device id
-// enttec-usb-dmx-pro'
 var universe = null;
 
 moment().format();
@@ -74,10 +69,10 @@ var universeMap = {};
 
 var colorModel = new Array();
 
-colorModel[0] = new HSVColor(0,0,0); 
-colorModel[1] = new HSVColor(0,0,0); 
-colorModel[2] = new HSVColor(0,0,0); 
-colorModel[3] = new HSVColor(0,0,0); 
+colorModel[0] = new HSVColor(0,1,1); 
+colorModel[1] = new HSVColor(0,1,1); 
+colorModel[2] = new HSVColor(0,1,1); 
+colorModel[3] = new HSVColor(0,1,1); 
 
 var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0', '#ff5400']);
 
@@ -154,10 +149,7 @@ Amplifier.prototype.handleTouches = function(touch) {
 		var logMessage = "Touch: " + touch.group + "\tTime: " + now.valueOf() + "\t Sensor: " + newTouchEvent.sensorPin ; 
 		console.log(logMessage.green); 
 
-		// Handle Column Mappings ?? 
-	
 		// Check for hand connection event conditions (bridging panels 2 + 3 together)
-		// ToDo: Debounce the detection event (set a flag+timer or something?)
 		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
 			
 			handConnectionEvents.push(newTouchEvent);
@@ -169,8 +161,18 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 				// Make sure related in time
 				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp <= 1000) {
-					// Go crazy!! 
+					
+					function activateMemeMode() {
+						memeMode = true;
+					}; 
+
+					// Find way of setting meme mode length 
+					var throttledMemeMode = _.throttle(activateMemeMode, 15000);
+
+					throttledMemeMode(); 
+
 				}
+
 			}
 
 		}
@@ -317,21 +319,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			console.log(dmxOptions); 
 
-			colorModel[0].H = 0.25; 
-			colorModel[1].H = 0.28;
-			colorModel[2].H = 0.31; 
-			colorModel[3].H = 0.34;
-
-			colorModel[0].S = 1; 
-			colorModel[1].S = 1;
-			colorModel[2].S = 1;
-			colorModel[3].S = 1;
-
-			colorModel[0].V = 1; 
-			colorModel[1].V = 1;
-			colorModel[2].V = 1;
-			colorModel[3].V = 1;
-
 			var counter = 0;
 			var colorMode = 0; 
 			var p1, p2, p3, p4; 
@@ -342,7 +329,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				if (memeMode) {
 
-					
+					// ToDo
 
 				} else {
 
@@ -374,7 +361,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				}
 
-
 				// Universe increments in groups of six because (that's how many channels the lights use (but, we only use the first three))
 				var idx = 0;
 				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
@@ -394,7 +380,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				}
 
-				console.log(colorModel);
+				// console.log(colorModel);
 
 				if (dmxOptions.live) universe.update(universeMap);
 
