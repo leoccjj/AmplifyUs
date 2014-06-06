@@ -56,7 +56,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
  	 		}
 
 			if(!audioEngine.enabled){
-				console.log("AudioEngine not active", audioEngine);
+				console.log("AudioEngine not active", audioEngine);d
 				return;
 			}
 
@@ -69,7 +69,12 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			audioEngine.dispatch("musicOn");
 
 			audioEngine.setMemeCallback(function(){
-				wsserver.send({event: "meme"});
+
+				var audioBusManager = DMAF.Managers.getAudioBusManager();
+				audioBusManager.activeAudioBusInstances.output_bus.output.gain.setTargetValueAtTime(DMAF.masterVolume, 0, 0.25);
+
+				wsserver.send({event: "meme-stop"});
+
 			}); 
 
 			//setInterval(function() {
@@ -106,7 +111,12 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		$scope.playMeme = function(memeName) {
 
+			var audioBusManager = DMAF.Managers.getAudioBusManager();
+			audioBusManager.activeAudioBusInstances.output_bus.output.gain.setTargetValueAtTime(0.0, 0, 0.25);
+
 			audioEngine.dispatch(memeName);
+
+			wsserver.send({event: "meme-start"});
 
 		}
 

@@ -88,6 +88,7 @@ var memeCooldown = false;
 
 var tickTimer = null; 
 var colorTimer = null; 
+var modelControlTimer = null; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,8 +220,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		startColorLoop();   // Main control loop
 
 		// Debugging only! 
-		setInterval(function(){
-			audioModel.tempo.value = 115; 
+		modelControlTimer = setInterval(function(){
+			// audioModel.tempo.value = 115; 
 			// audioModel.delaySync = "4";
 			audioModel.transpose.value = true; 
 		}, 9000);
@@ -242,8 +243,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				touchStatistics.parameters = newMessage.config; 
 			}
 
-			// Meme has ended! 
-			else if (newMessage.event == "meme") {
+			else if (newMessage.event == "meme-stop") {
+
+				console.log("MemeMode Has Ended!".green); 
 
 				memeMode = false;
 				memeCooldown = true;
@@ -255,12 +257,21 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			}
 
+			else if (newMessage.event == "meme-start") {
+
+				console.log("MemeMode Has Started! ".red); 
+
+				memeMode = true;
+
+			}
+
 		});
 
 		ws.on('close', function() {
 			
 			clearInterval(tickTimer);
 			clearInterval(colorTimer);
+			clearInterval(modelControlTimer);
 
 			// client.connection._socket._handle
 
@@ -350,7 +361,15 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				if (memeMode) {
 
-					// ToDo
+					colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0.001, 0.025));  
+					colorModel[1].H = quickColor(colorModel[1].H, util.random_float(0.001, 0.025));  
+					colorModel[2].H = quickColor(colorModel[2].H, util.random_float(0.001, 0.025));  
+					colorModel[3].H = quickColor(colorModel[3].H, util.random_float(0.001, 0.025));  
+
+					colorModel[0].S = 1.0;
+					colorModel[1].S = 1.0;
+					colorModel[2].S = 1.0;
+					colorModel[3].S = 1.0;
 
 				} else {
 
@@ -448,6 +467,14 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				var b = outputMin;
 
 				return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
+			};
+
+			function quickColor(value, toAdd) {
+
+				var result = ((value * 100) + (toAdd * 100)) % 100;
+
+				return parseFloat(result / 100, 10);
+
 			};
 
 		};
