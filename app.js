@@ -74,7 +74,8 @@ colorModel[1] = new HSVColor(0,1,1);
 colorModel[2] = new HSVColor(0,1,1); 
 colorModel[3] = new HSVColor(0,1,1); 
 
-var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0', '#ff5400']);
+// var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0', '#ff5400']);
+ bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#ff5400']);
 
 var GalileoAddresses = ['192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104']; 
 
@@ -82,6 +83,10 @@ var handConnectionEvents = new buf(2);
 
 var memeMode = false; 
 var memeCooldown = false; 
+
+for (var i = 0.0; i < 1.0; i += 0.01) {
+	// console.log(bezInterpolator(i));
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -323,7 +328,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.050, 1.0); 
 				audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
 
-				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.00, 0.20); 
+				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.050, 0.80); 
 				audioModel.patatap_b.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0); 
 
 				audioModel.rhodesIntensity.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
@@ -361,10 +366,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				if (memeMode) {
 
-					colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0.001, 0.025));  
-					colorModel[1].H = quickColor(colorModel[1].H, util.random_float(0.001, 0.025));  
-					colorModel[2].H = quickColor(colorModel[2].H, util.random_float(0.001, 0.025));  
-					colorModel[3].H = quickColor(colorModel[3].H, util.random_float(0.001, 0.025));  
+					colorModel[0].H = quickColor(colorModel[0].H, .0075);  
+					colorModel[1].H = quickColor(colorModel[1].H, .0075);  
+					colorModel[2].H = quickColor(colorModel[2].H, .0075);  
+					colorModel[3].H = quickColor(colorModel[3].H, .0075);  
 
 					colorModel[0].S = 1.0;
 					colorModel[1].S = 1.0;
@@ -436,10 +441,11 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				// console.log(colorModel);
 
-				if (dmxOptions.live) universe.update(universeMap);
+				if (dmxOptions.live) {
 
-				// Turn off when finished debugging 
-				if (true) {
+					universe.update(universeMap);
+
+				} else {
 
 					var eV = {
 						colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]

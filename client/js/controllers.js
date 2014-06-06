@@ -42,10 +42,11 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
         	if ($scope.guiControllers.length == 0) {
 
+				// Config From Server
 	        	$scope.guiVariables = args;
 
-	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'decayRate', .000125, .0050));
-	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables , 'addRate', 0.001, 0.050));
+	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'decayRate', .000125, .0050));
+	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'addRate', 0.001, 0.050));
 
 	 	 		_.forEach($scope.guiControllers, function(controller){
 	 	 			controller.onFinishChange(function(value){
@@ -53,10 +54,29 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 	 	 			});
 	 	 		}); 
 
+	 	 		// Local Config
+	 	 		$scope.guiVariables.gain = 0.50;
+	 	 		$scope.guiVariables.tempo = 115; 
+
+	 	 		var gainController = gui.add($scope.guiVariables, 'gain', 0.0, 1.0);
+	 	 		var tempoController = gui.add($scope.guiVariables, 'tempo', 105, 130); 
+
+	 	 		$scope.guiControllers.push(gainController);
+	 	 		$scope.guiControllers.push(tempoController);
+
+	 	 		gainController.onFinishChange(function(value){
+	 	 			DMAF.masterVolume = value; 
+	 	 			DMAF.context.master.gain.setTargetValueAtTime(value, 0, 0.2);
+	 	 		});
+
+	 	 		tempoController.onFinishChange(function(value){
+	 	 			audioEngine.dispatch("tempo", value);
+	 	 		});
+
  	 		}
 
 			if(!audioEngine.enabled){
-				console.log("AudioEngine not active", audioEngine);d
+				console.log("AudioEngine not active", audioEngine);
 				return;
 			}
 
@@ -111,12 +131,18 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		$scope.playMeme = function(memeName) {
 
-			var audioBusManager = DMAF.Managers.getAudioBusManager();
-			audioBusManager.activeAudioBusInstances.output_bus.output.gain.setTargetValueAtTime(0.0, 0, 0.25);
+			audioEngine.dispatch("scratch");
 
-			audioEngine.dispatch(memeName);
+			setTimeout(function() {
 
-			wsserver.send({event: "meme-start"});
+				var audioBusManager = DMAF.Managers.getAudioBusManager();
+				audioBusManager.activeAudioBusInstances.output_bus.output.gain.setTargetValueAtTime(0.0, 0, 0.25);
+
+				audioEngine.dispatch(memeName);
+
+				wsserver.send({event: "meme-start"});
+
+			}, 700);
 
 		}
 

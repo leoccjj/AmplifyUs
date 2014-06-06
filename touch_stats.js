@@ -11,7 +11,7 @@ var touchStatistics = {
 		decayRate: .0032, 
 		addRate: 0.024,
 		panelDecay: 0,
-		panelAdd: 0, 
+		panelAdd: 0,
 	}, 
 
 	touchActivity: 0, 
