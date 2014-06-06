@@ -157,7 +157,20 @@ Amplifier.prototype.handleTouches = function(touch) {
 				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp <= 1000) {
 					
 					if (!memeCooldown) {
+
+						var eV = {
+							audioModel: {
+								meme: true
+							}
+						}; 
+
+						ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
+							if(error) console.error(error); 
+						});
+
+
 						memeMode = true; 
+
 					}
 
 				}
@@ -208,7 +221,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		// Debugging only! 
 		setInterval(function(){
 			audioModel.tempo.value = 115; 
-			audioModel.delaySync = "4";
+			// audioModel.delaySync = "4";
 			audioModel.transpose.value = true; 
 		}, 9000);
 

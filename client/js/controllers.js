@@ -27,6 +27,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.colorModel = new Array();
 		$scope.audioModel = new Object(); 
 
+		$scope.memes = ["harlem", "nyan", "happy", "gangnam", "fox", "friday", "daft_punk"]; 
+		$scope.memeIndex = 0; 
+
 		wsserver.on('tick', function(args) {
         	$scope.touchActivity = args; 
         	$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
@@ -102,7 +105,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		}, true);
 
 		$scope.playMeme = function(memeName) {
+
 			audioEngine.dispatch(memeName);
+
 		}
 
 		function dispatch(model) {
@@ -115,6 +120,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			}
 			else if (model.instrument) {
 				audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
+			}
+			else if (model.meme) {
+				$scope.playMeme($scope.memes[$scope.memeIndex % 7]); 
+				$scope.memeIndex++; 
 			}
 			else {
 				audioEngine.dispatch(model.key); 
