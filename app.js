@@ -81,6 +81,7 @@ var GalileoAddresses = ['192.168.1.101', '192.168.1.102', '192.168.1.103', '192.
 var handConnectionEvents = new buf(2); 
 
 var memeMode = false; 
+var memeCooldown = false; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +205,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		core.clientList.push({addr: newClient, connection: ws});
 
-		// console.log('Clients', core.clientList); 
+		console.log('Clients: ', core.clientList); 
 
 		startTicking(); 	// Client control/notification
 		startColorLoop();   // Main control loop
@@ -225,6 +226,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		ws.on('message', function(message, flags) {
 
 			var newMessage = JSON.parse(message);
+
+			console.log(message);
 
 			if (newMessage.event == "touchup" || newMessage.event == "touchdown") {
 				myAmplifier.handleTouches(newMessage); 
@@ -347,20 +350,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					p3 = easingMap(touchStatistics.panelActivity[2], 0.0, 1.0, 0.175, 1.0);
 					p4 = easingMap(touchStatistics.panelActivity[3], 0.0, 1.0, 0.175, 1.0);
 
-					//tweenquad.setParameters(8,easingquad,ofxTween::easeOut,0,ofGetWidth()-100,duration,delay);
-
-					// console.log();
-
-					function easingMap(value, inputMin, inputMax, outputMin, outputMax) {
-
-						var t = value - inputMin;
-						var c = outputMax - outputMin;
-						var d = inputMax - inputMin;
-						var b = outputMin;
-
-						return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
-					}
-
 					var t1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 1.0, 2.0);
 
 					// Not used right now 
@@ -396,6 +385,16 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 					myAmplifier.oscClients[c].send("p|" + R.toString() + "|" + G.toString() + "|" + B.toString());
 
+					// Black when in cooldown mode (won't trigger)
+					if (memeCooldown) {
+						myAmplifier.oscClients[c].send("c|0|0|0");
+					} else {
+						// gesture between panels that a connection should be made! 
+						var breathe = Math.abs(Math.sin(counter)) * 255; 
+						myAmplifier.oscClients[c].send("c|" + breathe + "|" + breathe + "|" + breathe);
+						// myAmplifier.oscClients[c].send("c|" + 255 - breathe + "|" + 255 - breathe + "|" + 255 - breathe);
+					}
+
 				}
 
 				// console.log(colorModel);
@@ -421,7 +420,17 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			function incrementCounter(value) {
 				return value += 0.01; 
-			}
+			};
+
+			function easingMap(value, inputMin, inputMax, outputMin, outputMax) {
+
+				var t = value - inputMin;
+				var c = outputMax - outputMin;
+				var d = inputMax - inputMin;
+				var b = outputMin;
+
+				return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
+			};
 
 		};
 

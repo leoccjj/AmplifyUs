@@ -65,6 +65,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			audioEngine.dispatch("musicOn");
 
+			audioEngine.setMemeCallback(function(){
+				wsserver.send({event: "meme"});
+			}); 
+
 			//setInterval(function() {
 			//	audioEngine.dispatch("transpose");
 			//}, 4 * DMAF.Processors.getMusicController().player.barLength);
@@ -99,33 +103,24 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		function dispatch(model) {
 
-			//console.log(model);
+			//var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
+			//console.log(DMAF.Processors.getMusicController().player.getCurrentBeatTime()); 
 
 			if (model.wait) {
-
-				var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
-
-				console.log(DMAF.Processors.getMusicController().player.getCurrentBeatTime()); 
-				console.log(nextTime);
-
-				//setTimeout(function() {
-					console.log("dispatch", model.key); 
-					audioEngine.dispatch(model.key, model.value); 
-				// }, nextTime); 
-				
+				audioEngine.dispatch(model.key, model.value); 
 			}
-
+			else if (model.instrument) {
+				audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
+			}
 			else {
-				if (model.instrument) {
-					audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
-				}
-				else {
-					audioEngine.dispatch(model.key); 
-				}
+				audioEngine.dispatch(model.key); 
 			}
-			
 
 		}
+
+		setTimeout(function(){
+			audioEngine.dispatch("harlem");
+		}, 6000); 
 
 	}
 
