@@ -101,6 +101,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		}, true);
 
+		$scope.playMeme = function(memeName) {
+			audioEngine.dispatch(memeName);
+		}
+
 		function dispatch(model) {
 
 			//var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
@@ -117,10 +121,6 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			}
 
 		}
-
-		setTimeout(function(){
-			audioEngine.dispatch("harlem");
-		}, 6000); 
 
 	}
 

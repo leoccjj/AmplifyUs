@@ -304,3 +304,15 @@ light-visualizer .color-block {
   font-size: 10px;
   padding: 4px;
 }
+
+.memeButtons {
+  margin-left: 30px;
+}
+
+.memeButton {
+  padding: 8px;
+  font-size: 14px;
+  border: 2px solid black;
+  float: left;
+  margin-right: 12px;
+}

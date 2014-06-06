@@ -7,3 +7,11 @@ div.page-container
 			touch-chart(point="touchActivity")
 			p Mean Inter-Onset Duration: {{meanOnsetDurations || 0}}ms
 		div(touch-node)
+	div.memeButtons
+		.memeButton(ng-click="playMeme('harlem')") Harlem Shake
+		.memeButton(ng-click="playMeme('nyan')") Nyan Cat Theme
+		.memeButton(ng-click="playMeme('happy')") Pharell - Happy
+		.memeButton(ng-click="playMeme('gangnam')") Gangnam Style
+		.memeButton(ng-click="playMeme('fox')") What the Fox Say? 
+		.memeButton(ng-click="playMeme('friday')") Rebecca Black
+		.memeButton(ng-click="playMeme('daft')") Daft Punk

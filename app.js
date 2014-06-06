@@ -156,14 +156,9 @@ Amplifier.prototype.handleTouches = function(touch) {
 				// Make sure related in time
 				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp <= 1000) {
 					
-					function activateMemeMode() {
-						memeMode = true;
-					}; 
-
-					// Find way of setting meme mode length 
-					var throttledMemeMode = _.throttle(activateMemeMode, 15000);
-
-					throttledMemeMode(); 
+					if (!memeCooldown) {
+						memeMode = true; 
+					}
 
 				}
 
@@ -226,15 +221,25 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		ws.on('message', function(message, flags) {
 
 			var newMessage = JSON.parse(message);
-
-			console.log(message);
-
 			if (newMessage.event == "touchup" || newMessage.event == "touchdown") {
 				myAmplifier.handleTouches(newMessage); 
 			}
 
 			else if (newMessage.event == "config") {
 				touchStatistics.parameters = newMessage.config; 
+			}
+
+			// Meme has ended! 
+			else if (newMessage.event == "meme") {
+
+				memeMode = false;
+				memeCooldown = true;
+
+				// Meme cooldown (1 minute)
+				setTimeout(function() {
+					memeCooldown = false; 
+				}, 60000); 
+
 			}
 
 		});
