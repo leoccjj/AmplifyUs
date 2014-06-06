@@ -85,13 +85,6 @@ var memeMode = false;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Debugging only! 
-setInterval(function(){
-	audioModel.tempo.value = 128; 
-	audioModel.delaySync = "4";
-	audioModel.transpose.value = true; 
-}, 9000);
-
 var tickTimer = null; 
 var colorTimer = null; 
 
@@ -216,6 +209,13 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		startTicking(); 	// Client control/notification
 		startColorLoop();   // Main control loop
 
+		// Debugging only! 
+		setInterval(function(){
+			audioModel.tempo.value = 115; 
+			audioModel.delaySync = "4";
+			audioModel.transpose.value = true; 
+		}, 9000);
+
 		console.log(touchStatistics.parameters);
 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
@@ -288,10 +288,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.25, 1.0); 
+				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.050, 1.0); 
 				audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
 
-				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.025, 0.20); 
+				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.00, 0.20); 
 				audioModel.patatap_b.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0); 
 
 				audioModel.rhodesIntensity.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
@@ -334,18 +334,34 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				} else {
 
 					// make the installation breathe a little via hue
-					osc1 = oz.sine(counter, .7500) * 0.025; 
-					osc2 = oz.sine(counter, .7500) * 0.025;
-					osc3 = oz.sine(counter, .7500) * 0.025;
-					osc4 = oz.sine(counter, .7500) * 0.025;
+					osc1 = oz.sine(counter, .7100) * 0.033; 
+					osc2 = oz.sine(counter, .7300) * 0.033;
+					osc3 = oz.sine(counter, .7600) * 0.033;
+					osc4 = oz.sine(counter, .7900) * 0.033;
 
 					// separate the hue a bit 
-					var osc = [osc1, osc2 + .03 , osc3 + 0.06, osc4 + 0.09];
+					var osc = [osc1, osc2 + .04 , osc3 + 0.07, osc4 + 0.12];
 
-					p1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.33, 1.0);
-					p2 = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.33, 1.0);
-					p3 = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.33, 1.0);
-					p4 = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.33, 1.0);
+					p1 = easingMap(touchStatistics.panelActivity[0], 0.0, 1.0, 0.175, 1.0);
+					p2 = easingMap(touchStatistics.panelActivity[1], 0.0, 1.0, 0.175, 1.0);
+					p3 = easingMap(touchStatistics.panelActivity[2], 0.0, 1.0, 0.175, 1.0);
+					p4 = easingMap(touchStatistics.panelActivity[3], 0.0, 1.0, 0.175, 1.0);
+
+					//tweenquad.setParameters(8,easingquad,ofxTween::easeOut,0,ofGetWidth()-100,duration,delay);
+
+					// console.log();
+
+					function easingMap(value, inputMin, inputMax, outputMin, outputMax) {
+
+						var t = value - inputMin;
+						var c = outputMax - outputMin;
+						var d = inputMax - inputMin;
+						var b = outputMin;
+
+						return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
+					}
+
+					var t1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 1.0, 2.0);
 
 					// Not used right now 
 					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
@@ -354,6 +370,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[1].S = p2;
 					colorModel[2].S = p3;
 					colorModel[3].S = p4;
+
+					// colorModel[0].V = p1;
 
 					for (var i = 0; i < 4; i++){
 						colorModel[i].H = util.clamp((bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);

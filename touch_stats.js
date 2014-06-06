@@ -8,8 +8,8 @@ var touchBuffer = new CircularBuffer(48);
 var touchStatistics = {
 
 	parameters: {
-		decayRate: .00125, 
-		addRate: 0.0125,
+		decayRate: .0032, 
+		addRate: 0.024,
 		panelDecay: 0,
 		panelAdd: 0, 
 	}, 
