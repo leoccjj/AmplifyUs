@@ -74,8 +74,8 @@ colorModel[1] = new HSVColor(0,1,1);
 colorModel[2] = new HSVColor(0,1,1); 
 colorModel[3] = new HSVColor(0,1,1); 
 
-// var bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#c638e0', '#ff5400']);
- bezInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#ff5400']);
+// Cool to Warm
+var activityHueInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#ff5400']);
 
 var GalileoAddresses = ['192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104']; 
 
@@ -83,10 +83,6 @@ var handConnectionEvents = new buf(2);
 
 var memeMode = false; 
 var memeCooldown = false; 
-
-for (var i = 0.0; i < 1.0; i += 0.01) {
-	// console.log(bezInterpolator(i));
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -361,10 +357,11 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				if (memeMode) {
 
-					colorModel[0].H = quickColor(colorModel[0].H, .0075);  
-					colorModel[1].H = quickColor(colorModel[1].H, .0075);  
-					colorModel[2].H = quickColor(colorModel[2].H, .0075);  
-					colorModel[3].H = quickColor(colorModel[3].H, .0075);  
+					// http://localhost:6005/#/overview
+					colorModel[0].H = quickColor(colorModel[0].H, util.random_float(0, 0.1));  
+					colorModel[1].H = quickColor(colorModel[1].H, util.random_float(0, 0.1));  
+					colorModel[2].H = quickColor(colorModel[2].H, util.random_float(0, 0.1));  
+					colorModel[3].H = quickColor(colorModel[3].H, util.random_float(0, 0.1));  
 
 					colorModel[0].S = 1.0;
 					colorModel[1].S = 1.0;
@@ -380,10 +377,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				} else {
 
 					// make the installation breathe a little via hue
-					osc1 = oz.sine(counter, .7100) * 0.033; 
-					osc2 = oz.sine(counter, .7300) * 0.033;
-					osc3 = oz.sine(counter, .7600) * 0.033;
-					osc4 = oz.sine(counter, .7900) * 0.033;
+					osc1 = oz.sine(counter, .7100) * 0.018; 
+					osc2 = oz.sine(counter, .7300) * 0.018;
+					osc3 = oz.sine(counter, .7600) * 0.018;
+					osc4 = oz.sine(counter, .7900) * 0.018;
 
 					// separate the hue a bit 
 					var osc = [osc1, osc2 + .04 , osc3 + 0.07, osc4 + 0.12];
@@ -412,13 +409,12 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[3].V = p4;
 
 					for (var i = 0; i < 4; i++){
-						colorModel[i].H = util.clamp((bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
+						colorModel[i].H = util.clamp((activityHueInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
 					}		
 
 				}
 
 				var breathe = util.map(Math.abs(oz.sine(counter, 2) * 255), 0, 255, 40, 120) ; 
-				console.log(breathe);
 				breathe = breathe.toFixed(0);
 				breathe = breathe.toString();
 
@@ -449,40 +445,29 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 					}
 
-					if (i == 2)
-						console.log(R, G, B);
-					//}
-					
 					// Black when in cooldown mode (won't trigger)
 					if (memeCooldown) {
 						myAmplifier.oscClients[c].send("c|0|0|0");
 					} else {
 						// gesture between panels that a connection should be made! 
-						
 						myAmplifier.oscClients[c].send("c|" + breathe + "|" + breathe + "|" + breathe);
 						// myAmplifier.oscClients[c].send("c|" + 255 - breathe + "|" + 255 - breathe + "|" + 255 - breathe);
 					}
 
 				}
 
+				universe.update(universeMap);
+
 				// console.log(colorModel);
 
-				if (dmxOptions.live) {
+				var eV = {
+					colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
+				}; 
 
-					universe.update(universeMap);
-
-				} else {
-
-					var eV = {
-						colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
-					}; 
-
-					ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
-						if(error) console.error(error); 
-					});
-				
-				}
-
+				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
+					if(error) console.error(error); 
+				});
+			
 				counter = incrementCounter(counter); 
 
 			}, 90);
@@ -560,11 +545,9 @@ Amplifier.prototype.setupOSC = function(options) {
 
 		var newMessage = {};
 
-		//console.log(msg, rinfo);
 
-		// 0 - 3
 		newMessage.group = msg[1];
-		newMessage.sensorPin = msg[2]; // 0 - 3 
+		newMessage.sensorPin = msg[2]; 
 
 		if (msg[3] == 1) {
 			newMessage.event = "touchdown"; 
@@ -572,7 +555,8 @@ Amplifier.prototype.setupOSC = function(options) {
 			newMessage.event = "touchup"; 
 		}
 
-		// console.log(newMessage);
+		//console.log(msg, rinfo);
+		//console.log(newMessage);
 
 		myAmplifier.handleTouches(newMessage); 
 

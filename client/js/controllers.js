@@ -45,8 +45,8 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 				// Config From Server
 	        	$scope.guiVariables = args;
 
-	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'decayRate', .000125, .0050));
-	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'addRate', 0.001, 0.050));
+	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'decayRate', .000125, .020));
+	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'addRate', 0.001, 0.100));
 
 	 	 		_.forEach($scope.guiControllers, function(controller){
 	 	 			controller.onFinishChange(function(value){
@@ -82,12 +82,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			audioEngine.loadPatterns();
 
-			setInterval(function(){
-				console.log("SynthManager", DMAF.Managers.getSynthManager());
-			}, 10000);
-			
 			//console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
 			//console.log("MusicController", DMAF.Processors.getMusicController());
+			//console.log("SynthManager", DMAF.Managers.getSynthManager());
 
 			audioEngine.dispatch("musicOn");
 
