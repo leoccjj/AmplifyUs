@@ -39,6 +39,13 @@ var universe = null;
 
 moment().format();
 
+// [] Impulse for touches => Activity Model
+// [] Last Touch Strip => Saturation
+// [] Column Activity => Value
+// [] Instant Touch Sound 
+// [] Faster Loop for DMX
+// [] 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -414,7 +421,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				}
 
-				var breathe = util.map(Math.abs(oz.sine(counter, 2) * 255), 0, 255, 40, 120) ; 
+				var breathe = util.map(Math.abs(oz.sine(counter, 2) * 255), 0, 255, 40, 120); 
 				breathe = breathe.toFixed(0);
 				breathe = breathe.toString();
 
@@ -468,13 +475,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 			
-				counter = incrementCounter(counter); 
+				counter += 0.01;
 
 			}, 90);
-
-			function incrementCounter(value) {
-				return value += 0.01; 
-			};
 
 			function easingMap(value, inputMin, inputMax, outputMin, outputMax) {
 
