@@ -82,7 +82,10 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			audioEngine.loadPatterns();
 
-			//console.log("SynthManager", DMAF.Managers.getSynthManager());
+			setInterval(function(){
+				console.log("SynthManager", DMAF.Managers.getSynthManager());
+			}, 10000);
+			
 			//console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
 			//console.log("MusicController", DMAF.Processors.getMusicController());
 
