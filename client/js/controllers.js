@@ -103,6 +103,27 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
         });
 
+		wsserver.on('touch', function(args) {
+
+        	var touchEvent = args.touch;
+
+        	var pin = touchEvent.sensorPin; 
+
+        	console.log(pin);
+
+
+        	if (pin == 0) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 80}); 
+			} else if (pin == 1) {
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 90}); 
+			} else if (pin == 2) {
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			} else if (pin == 3) {
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 92, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			}
+
+        }); 
+
         wsserver.on('colors', function(colorEvent) {
         	$scope.colorModel = colorEvent.colorModel; 
         });
@@ -119,8 +140,55 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		}
 
 		$scope.registerTouch = function(event, group) {
-			wsserver.send({event: event, group: group})
+			wsserver.send({event: event, group: group, sensorPin: 3}); 
 		}; 
+
+		/* 
+		$scope.pluck = function(pin) {
+
+			wsserver.send({event: "touchdown", group: 0, sensorPin: pin});
+
+			//var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
+			//console.log(DMAF.Processors.getMusicController().player.getCurrentBeatTime()); 
+
+			// setTimeout()
+
+			console.log(pin);
+
+			if (pin == 1) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 77, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			} else if (pin == 2) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 91, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			} else if (pin == 3) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			}
+
+
+			if (pin == 1) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			} else if (pin == 2) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 100}); 
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			} else if (pin == 3) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 90}); 
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 100}); 
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			} else if (pin == 4) {
+				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 80}); 
+				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 90}); 
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 100}); 
+				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 92, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+			}
+
+		}; 
+
+		*/ 
 
 		$scope.$watch('guiVariables', function(newValue, oldValue) {
 

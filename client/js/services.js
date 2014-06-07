@@ -22,6 +22,7 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 		'config': function () {}, 
 		'colors': function() {},
 		'audio': function() {}, 
+		'touch': function() {},
 	};
 
 	var on = function(e, f) { // assign callback functions

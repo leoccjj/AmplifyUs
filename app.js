@@ -38,8 +38,8 @@ var universe = null;
 
 moment().format();
 
-// [] Last Touch Strip => Saturation
-// [] Column Activity => Value
+// [X] Last Touch Strip => Saturation
+// [X] Column Activity => Value
 // [] Impulse for touches => Activity Model
 // [] Instant Touch Sound 
 // [] Faster Loop for DMX
@@ -137,10 +137,8 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 		var newTouchEvent = {}; 
 
-		//newTouchEvent.eventType = touch.eventType; 
-
 		newTouchEvent.group = touch.group; 
-		newTouchEvent.sensorPin = touch.sensorPin || -1; 
+		newTouchEvent.sensorPin = touch.sensorPin; 
 
 		newTouchEvent.timestamp = moment().valueOf();
 
@@ -150,6 +148,17 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 		var logMessage = "Touch: " + touch.group + "\tTime: " + now.valueOf() + "\t Sensor: " + newTouchEvent.sensorPin ; 
 		console.log(logMessage.green); 
+
+
+		var ws = myAmplifier.clientList[0].connection;
+
+		var eV = {
+			touch: newTouchEvent,
+		}; 
+
+		ws.send(JSON.stringify({event: eV, name: "touch"}), function(error){
+			if(error) console.error(error); 
+		});
 
 		// Check for hand connection event conditions (bridging panels 2 + 3 together)
 		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
@@ -175,7 +184,6 @@ Amplifier.prototype.handleTouches = function(touch) {
 						ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
 							if(error) console.error(error); 
 						});
-
 
 						memeMode = true; 
 
@@ -216,6 +224,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		clearInterval(tickTimer);
 		clearInterval(colorTimer);
+		clearInterval(modelControlTimer); 
 
 		console.log("[Websocket] // New Connection From: ".blue, newClient);
 
@@ -231,7 +240,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			
 			audioModel.transpose.value = true; 
 
-
 		}, 9000);
 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
@@ -241,6 +249,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		ws.on('message', function(message, flags) {
 
 			var newMessage = JSON.parse(message);
+
+			console.log(newMessage);
+
 			if (newMessage.event == "touchup" || newMessage.event == "touchdown") {
 				myAmplifier.handleTouches(newMessage); 
 			}
@@ -327,8 +338,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); 
-				audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
+				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); // move to 3 maybe? 
+				// audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
+				audioModel.patatap_a.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); 
 
 				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 0.80); 
 				audioModel.patatap_b.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0); 
@@ -336,7 +348,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				audioModel.rhodesIntensity.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
 				audioModel.patatap_c.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
 
-				audioModel.patatap_a.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
 				audioModel.vibraphoneIntensity.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
 				
 			}, 90); 
@@ -425,7 +436,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[3].S = (touchStatistics.panelLastPins[3] + 1) * 0.25; 
 
 					// Light -- Change to .S for Darkness Map 
-					colorModel[0].V = 1;
+					colorModel[0].V = 1; // Panel Activity for decay, but use value range
 					colorModel[1].V = 1;
 					colorModel[2].V = 1;
 					colorModel[3].V = 1;

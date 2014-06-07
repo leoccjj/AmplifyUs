@@ -316,3 +316,14 @@ light-visualizer .color-block {
   float: left;
   margin-right: 12px;
 }
+
+.pluckers {
+  margin: 0px 0 0 30px;
+}
+.pluckers .pluck {
+  float: left;
+  height: 80px;
+  min-width: 20px;
+  background-color: black;
+  margin-right: 2px;
+}
