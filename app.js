@@ -229,16 +229,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		// Debugging only! 
 		modelControlTimer = setInterval(function(){
 			
-			touchStatistics.panelActivity[0] += 1.0;
-			touchStatistics.panelActivity[1] += 1.0;
-			touchStatistics.panelActivity[2] += 1.0;
-			touchStatistics.panelActivity[3] += 1.0;
-
 			audioModel.transpose.value = true; 
 
-			console.log("Audio Model: Mix It Up!");
 
-		}, 12000);
+		}, 9000);
 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
 			if(error) console.log(error); 
@@ -385,10 +379,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				} else {
 
 					// make the installation breathe a little via hue
-					osc1 = oz.sine(counter, .7100) * 0.018; 
-					osc2 = oz.sine(counter, .7300) * 0.018;
-					osc3 = oz.sine(counter, .7600) * 0.018;
-					osc4 = oz.sine(counter, .7900) * 0.018;
+					osc1 = oz.sine(counter, .7100) * 0.009; 
+					osc2 = oz.sine(counter, .7300) * 0.009;
+					osc3 = oz.sine(counter, .7600) * 0.009;
+					osc4 = oz.sine(counter, .7900) * 0.009;
 
 					// separate the hue a bit 
 					var osc = [osc1, osc2 + .04 , osc3 + 0.07, osc4 + 0.12];
@@ -407,6 +401,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					// Not used right now 
 					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
 
+					/*  Dimitri Mapping 
 					colorModel[0].S = p1;
 					colorModel[1].S = p2;
 					colorModel[2].S = p3;
@@ -417,6 +412,20 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[1].V = p2;
 					colorModel[2].V = p3;
 					colorModel[3].V = p4;
+					*/ 
+
+					colorModel[0].S = (touchStatistics.panelLastPins[0] + 1) * 0.25; 
+					colorModel[1].S = (touchStatistics.panelLastPins[1] + 1) * 0.25; 
+					colorModel[2].S = (touchStatistics.panelLastPins[2] + 1) * 0.25; 
+					colorModel[3].S = (touchStatistics.panelLastPins[3] + 1) * 0.25; 
+
+					// Light -- Change to .S for Darkness Map 
+					colorModel[0].V = 1;
+					colorModel[1].V = 1;
+					colorModel[2].V = 1;
+					colorModel[3].V = 1;
+
+					console.log(colorModel); 
 
 					for (var i = 0; i < 4; i++){
 						colorModel[i].H = util.clamp((activityHueInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);

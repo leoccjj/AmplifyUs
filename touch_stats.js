@@ -18,6 +18,8 @@ var touchStatistics = {
 
 	panelActivity: [0, 0, 0, 0], 
 
+	panelLastPins: [-1, -1, -1, -1], 
+
 	//  Inter-onset duration 
 	computeMeanInterOnsetDurations: function() {
 
@@ -67,6 +69,10 @@ var touchStatistics = {
 
 		if ( (groupActivity + this.parameters.addRate) <= 1) {
 			this.panelActivity[latestTouch.group] += this.parameters.addRate * 2; 
+		}
+
+		if (latestTouch.sensorPin <= 3) {
+			this.panelLastPins[latestTouch.group] = latestTouch.sensorPin; 
 		}
 
 		if ( (this.touchActivity + this.parameters.addRate) <= 1) 
