@@ -82,9 +82,9 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			audioEngine.loadPatterns();
 
-			console.log("SynthManager", DMAF.Managers.getSynthManager());
-			console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
-			console.log("MusicController", DMAF.Processors.getMusicController());
+			//console.log("SynthManager", DMAF.Managers.getSynthManager());
+			//console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
+			//console.log("MusicController", DMAF.Processors.getMusicController());
 
 			audioEngine.dispatch("musicOn");
 
@@ -127,7 +127,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			if ($scope.serverAvailable)
 			 	wsserver.send({event: "config", config: newValue});
 
-		}, true);
+		});
 
 		$scope.playMeme = function(memeName) {
 

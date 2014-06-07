@@ -113,8 +113,8 @@ function Amplifier(options) {
 	this.setupWebsocket(this.options.ws);
 
 	this.options.osc = this.options.osc || {};
-	this.options.osc.inputPort = 9000;
-	this.options.osc.outputPort = 10000;
+	this.options.osc.inputPort = 12000;
+	this.options.osc.outputPort = 12001;
 	this.setupOSC(this.options.osc);
 
 	this.options.dmx = this.options.dmx || {};
@@ -134,9 +134,12 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 	if (touch.event == "touchdown") {
 
+		console.log(touch);
+
 		var newTouchEvent = {}; 
 
-		newTouchEvent.eventType = touch.eventType; 
+		//newTouchEvent.eventType = touch.eventType; 
+
 		newTouchEvent.group = touch.group; 
 		newTouchEvent.sensorPin = touch.sensorPin || -1; 
 
@@ -336,14 +339,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				audioModel.patatap_a.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
 				audioModel.vibraphoneIntensity.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
-
-				if (touchStatistics.touchActivity >= .80) {
-					audioModel.delaySync = "4";
-				} else {
-					audioModel.delaySync = "8D"; 
-				}
-
-				// throttledTempo(); 
 				
 			}, 125); 
 	
@@ -376,6 +371,12 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[2].S = 1.0;
 					colorModel[3].S = 1.0;
 
+					// Dark instead of light 
+					colorModel[0].V = 1.0;
+					colorModel[1].V = 1.0;
+					colorModel[2].V = 1.0;
+					colorModel[3].V = 1.0;
+
 				} else {
 
 					// make the installation breathe a little via hue
@@ -387,12 +388,14 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					// separate the hue a bit 
 					var osc = [osc1, osc2 + .04 , osc3 + 0.07, osc4 + 0.12];
 
-					p1 = easingMap(touchStatistics.panelActivity[0], 0.0, 1.0, 0.175, 1.0);
-					p2 = easingMap(touchStatistics.panelActivity[1], 0.0, 1.0, 0.175, 1.0);
-					p3 = easingMap(touchStatistics.panelActivity[2], 0.0, 1.0, 0.175, 1.0);
-					p4 = easingMap(touchStatistics.panelActivity[3], 0.0, 1.0, 0.175, 1.0);
+					p1 = easingMap(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);
+					p2 = easingMap(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0);
+					p3 = easingMap(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0);
+					p4 = easingMap(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0);
 
 					var t1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 1.0, 2.0);
+
+					console.log(touchStatistics.panelActivity);
 
 					// Not used right now 
 					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
@@ -402,13 +405,22 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[2].S = p3;
 					colorModel[3].S = p4;
 
-					// colorModel[0].V = p1;
+					// Dark instead of light 
+					colorModel[0].V = p1;
+					colorModel[1].V = p2;
+					colorModel[2].V = p3;
+					colorModel[3].V = p4;
 
 					for (var i = 0; i < 4; i++){
 						colorModel[i].H = util.clamp((bezInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
 					}		
 
 				}
+
+				var breathe = util.map(Math.abs(oz.sine(counter, 2) * 255), 0, 255, 40, 120) ; 
+				console.log(breathe);
+				breathe = breathe.toFixed(0);
+				breathe = breathe.toString();
 
 				// Universe increments in groups of six because (that's how many channels the lights use (but, we only use the first three))
 				var idx = 0;
@@ -421,18 +433,32 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				for (var c = 0; c < myAmplifier.oscClients.length; c++) {
 
-					var R = colorModel[c].toRgb().R * 255; 
-					var G = colorModel[c].toRgb().G * 255; 
-					var B = colorModel[c].toRgb().B * 255; 
+					var R = Math.floor(colorModel[c].toRgb().R * 255); 
+					var G = Math.floor(colorModel[c].toRgb().G * 255); 
+					var B = Math.floor(colorModel[c].toRgb().B * 255); 
 
-					myAmplifier.oscClients[c].send("p|" + R.toString() + "|" + G.toString() + "|" + B.toString());
+					R.toFixed(0);
+					G.toFixed(0);
+					B.toFixed(0);
 
+					if (touchStatistics.panelActivity[c] <= 0.075 && !memeMode) {
+						myAmplifier.oscClients[c].send("p|" + breathe + "|" + breathe + "|" + breathe);
+						// console.log(breathe);
+					} else {
+						myAmplifier.oscClients[c].send("p|" + R.toString() + "|" + G.toString() + "|" + B.toString());
+
+					}
+
+					if (i == 2)
+						console.log(R, G, B);
+					//}
+					
 					// Black when in cooldown mode (won't trigger)
 					if (memeCooldown) {
 						myAmplifier.oscClients[c].send("c|0|0|0");
 					} else {
 						// gesture between panels that a connection should be made! 
-						var breathe = Math.abs(Math.sin(counter)) * 255; 
+						
 						myAmplifier.oscClients[c].send("c|" + breathe + "|" + breathe + "|" + breathe);
 						// myAmplifier.oscClients[c].send("c|" + 255 - breathe + "|" + 255 - breathe + "|" + 255 - breathe);
 					}
@@ -459,7 +485,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				counter = incrementCounter(counter); 
 
-			}, 32);
+			}, 90);
 
 			function incrementCounter(value) {
 				return value += 0.01; 
@@ -519,7 +545,7 @@ Amplifier.prototype.setupOSC = function(options) {
 	this.oscClients = new Array();
 
 	if (options.inputPort)
-		this.oscServer = new osc.Server(options.inputPort, '127.0.0.1');
+		this.oscServer = new osc.Server(options.inputPort, '0.0.0.0');
 		console.log('[OSC - Listening]: '.green, options);
 
 	if (options.outputPort) {
@@ -534,11 +560,19 @@ Amplifier.prototype.setupOSC = function(options) {
 
 		var newMessage = {};
 
-		console.log(msg, rinfo);
+		//console.log(msg, rinfo);
 
-		newMessage.eventType = msg[1]; 
-		newMessage.group = msg[2]; 
-		newMessage.sensorPin = msg[3]; 
+		// 0 - 3
+		newMessage.group = msg[1];
+		newMessage.sensorPin = msg[2]; // 0 - 3 
+
+		if (msg[3] == 1) {
+			newMessage.event = "touchdown"; 
+		} else {
+			newMessage.event = "touchup"; 
+		}
+
+		// console.log(newMessage);
 
 		myAmplifier.handleTouches(newMessage); 
 

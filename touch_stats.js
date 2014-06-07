@@ -66,7 +66,7 @@ var touchStatistics = {
 		var groupActivity = this.panelActivity[latestTouch.group]; 
 
 		if ( (groupActivity + this.parameters.addRate) <= 1) {
-			this.panelActivity[latestTouch.group] += this.parameters.addRate; 
+			this.panelActivity[latestTouch.group] += this.parameters.addRate * 2; 
 		}
 
 		if ( (this.touchActivity + this.parameters.addRate) <= 1) 
