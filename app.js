@@ -247,6 +247,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 			else if (newMessage.event == "config") {
 				touchStatistics.parameters = newMessage.config; 
+				console.log("New Parameters: \n".yellow, touchStatistics.parameters)
 			}
 
 			else if (newMessage.event == "meme-stop") {
@@ -338,7 +339,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				audioModel.patatap_a.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
 				audioModel.vibraphoneIntensity.value = util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0); 
 				
-			}, 125); 
+			}, 90); 
 	
 		}; 
 
@@ -395,13 +396,15 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					var t1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 1.0, 2.0);
 
 					// Debug Panel Activity
-					console.log(touchStatistics.panelActivity);
+					// console.log(touchStatistics.panelActivity);
 					// ==========
 
 					// Not used right now 
 					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
 
-					/*  Dimitri Mapping 
+					// Dimitri Test: 
+
+					/*  
 					colorModel[0].S = p1;
 					colorModel[1].S = p2;
 					colorModel[2].S = p3;
@@ -414,6 +417,8 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[3].V = p4;
 					*/ 
 
+					// Vicky Test: 
+
 					colorModel[0].S = (touchStatistics.panelLastPins[0] + 1) * 0.25; 
 					colorModel[1].S = (touchStatistics.panelLastPins[1] + 1) * 0.25; 
 					colorModel[2].S = (touchStatistics.panelLastPins[2] + 1) * 0.25; 
@@ -425,7 +430,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					colorModel[2].V = 1;
 					colorModel[3].V = 1;
 
-					console.log(colorModel); 
+					// console.log(colorModel); 
 
 					for (var i = 0; i < 4; i++){
 						colorModel[i].H = util.clamp((activityHueInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);

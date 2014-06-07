@@ -127,7 +127,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			if ($scope.serverAvailable)
 			 	wsserver.send({event: "config", config: newValue});
 
-		});
+		}, true);
 
 		$scope.playMeme = function(memeName) {
 
