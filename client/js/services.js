@@ -100,7 +100,6 @@ app.factory('wsserver', ['$rootScope', function($rootScope) {
 		on: on,
 		connect: connect,
 		send: send, 
-		// update_pins: update_pins,
 	};
 
 }]);

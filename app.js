@@ -28,7 +28,6 @@ var touchStatistics = require("./touch_stats");
 var audioModel = require("./audio_model");
 
 var oz = require('oscillators');
-var frequency = 0.1;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,12 +38,11 @@ var universe = null;
 
 moment().format();
 
-// [] Impulse for touches => Activity Model
 // [] Last Touch Strip => Saturation
 // [] Column Activity => Value
+// [] Impulse for touches => Activity Model
 // [] Instant Touch Sound 
 // [] Faster Loop for DMX
-// [] 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,8 +135,6 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 	if (touch.event == "touchdown") {
 
-		console.log(touch);
-
 		var newTouchEvent = {}; 
 
 		//newTouchEvent.eventType = touch.eventType; 
@@ -225,19 +221,24 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		core.clientList.push({addr: newClient, connection: ws});
 
-		console.log('Clients: ', core.clientList); 
+		//console.log('Clients: ', core.clientList); 
 
 		startTicking(); 	// Client control/notification
 		startColorLoop();   // Main control loop
 
 		// Debugging only! 
 		modelControlTimer = setInterval(function(){
-			// audioModel.tempo.value = 115; 
-			// audioModel.delaySync = "4";
-			audioModel.transpose.value = true; 
-		}, 9000);
+			
+			touchStatistics.panelActivity[0] += 1.0;
+			touchStatistics.panelActivity[1] += 1.0;
+			touchStatistics.panelActivity[2] += 1.0;
+			touchStatistics.panelActivity[3] += 1.0;
 
-		console.log(touchStatistics.parameters);
+			audioModel.transpose.value = true; 
+
+			console.log("Audio Model: Mix It Up!");
+
+		}, 12000);
 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
 			if(error) console.log(error); 
@@ -331,10 +332,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error(error); 
 				});
 
-				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.050, 1.0); 
+				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); 
 				audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
 
-				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.050, 0.80); 
+				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 0.80); 
 				audioModel.patatap_b.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0); 
 
 				audioModel.rhodesIntensity.value  = util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0); 
@@ -399,7 +400,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 					var t1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 1.0, 2.0);
 
+					// Debug Panel Activity
 					console.log(touchStatistics.panelActivity);
+					// ==========
 
 					// Not used right now 
 					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
@@ -446,7 +449,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 					if (touchStatistics.panelActivity[c] <= 0.075 && !memeMode) {
 						myAmplifier.oscClients[c].send("p|" + breathe + "|" + breathe + "|" + breathe);
-						// console.log(breathe);
 					} else {
 						myAmplifier.oscClients[c].send("p|" + R.toString() + "|" + G.toString() + "|" + B.toString());
 
@@ -463,7 +465,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				}
 
-				universe.update(universeMap);
+				if (dmxOptions.live) universe.update(universeMap);
 
 				// console.log(colorModel);
 
