@@ -76,11 +76,14 @@ app.directive('touchChart', function () {
 			.style("stroke", "#0F0F1E")
 			.style("stroke-width", "3"); 
 
+		var that = this; 
+
 		scope.$watch('point', function (newVal, oldVal) {
 
 			// push a new data point onto the back
-			if (newVal.value != oldVal.value) {
-				
+
+			if (newVal.value != oldVal.value ) {
+
 				data.push(newVal.value);
 
 				path
@@ -90,7 +93,7 @@ app.directive('touchChart', function () {
 					.duration(500)
 					.ease("linear")
 					.attr("transform", "translate(" + x(-1) + ",0)")
-					.each("end", this);
+					.each("end", that);
 
 				// pop the old data point off the front
 				data.shift();
