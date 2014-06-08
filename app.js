@@ -21,6 +21,7 @@ var HSVColor = require("./hsv_color");
 
 var WatchJS = require("watchjs")
 var watch = WatchJS.watch;
+var unwatch = WatchJS.unwatch; 
 
 var chroma = require("chroma-js");
 
@@ -157,39 +158,25 @@ Amplifier.prototype.handleTouches = function(touch) {
 		}; 
 
 		ws.send(JSON.stringify({event: eV, name: "touch"}), function(error){
-			if(error) console.error(error); 
+			if(error) console.error("Touch", error); 
 		});
 
 		// Check for hand connection event conditions (bridging panels 2 + 3 together)
-		if ((newTouchEvent.group === 2 || newTouchEvent.group === 3) && newTouchEvent.sensorPin === 5) {
+		if (newTouchEvent.sensorPin === 5) {
 			
-			handConnectionEvents.push(newTouchEvent);
+			if (!memeCooldown) {
 
-			if (!handConnectionEvents.group[1].group) return; 
-
-			// Different groups (2 or 3)
-			if (handConnectionEvents[0].group !== handConnectionEvents.group[1]) {
-
-				// Make sure related in time
-				if (handConnectionEvents[1].timestamp - handConnectionEvents[1].timestamp <= 1000) {
-					
-					if (!memeCooldown) {
-
-						var eV = {
-							audioModel: {
-								meme: true
-							}
-						}; 
-
-						ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
-							if(error) console.error(error); 
-						});
-
-						memeMode = true; 
-
+				var eV = {
+					audioModel: {
+						meme: true
 					}
+				}; 
 
-				}
+				ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
+					if(error) console.error("Audio/Meme", error); 
+				});
+
+				memeMode = true; 
 
 			}
 
@@ -226,6 +213,16 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		clearInterval(colorTimer);
 		clearInterval(modelControlTimer); 
 
+		_.each(audioModel, function(item) {
+
+			if (audioModel.item) {
+				unwatch(item);
+				console.log(item);
+			}
+			
+		}); 
+
+
 		console.log("[Websocket] // New Connection From: ".blue, newClient);
 
 		core.clientList.push({addr: newClient, connection: ws});
@@ -243,7 +240,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		}, 9000);
 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
-			if(error) console.log(error); 
+			if(error) console.log("Config", error); 
 		}); 
 
 		ws.on('message', function(message, flags) {
@@ -292,7 +289,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			clearInterval(modelControlTimer);
 
 			// client.connection._socket._handle
-
 			console.log("[Websocket Connection Closed]".red); 
 
 		});
@@ -335,7 +331,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				tick.groupActivity = touchStatistics.computeGroupActivity(); 
 
 				ws.send(JSON.stringify({event: tick, name: "tick"}), function(error){
-					if(error) console.error(error); 
+					if(error) console.error("Tick", error); 
 				});
 
 				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); // move to 3 maybe? 
@@ -430,16 +426,16 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 					// Vicky Test: 
 
-					colorModel[0].S = (touchStatistics.panelLastPins[0] + 1) * 0.25; 
-					colorModel[1].S = (touchStatistics.panelLastPins[1] + 1) * 0.25; 
-					colorModel[2].S = (touchStatistics.panelLastPins[2] + 1) * 0.25; 
-					colorModel[3].S = (touchStatistics.panelLastPins[3] + 1) * 0.25; 
+					colorModel[0].S = ((touchStatistics.panelLastPins[0] + 0) * 0.25) + .25; 
+					colorModel[1].S = ((touchStatistics.panelLastPins[1] + 0) * 0.25) + .25; 
+					colorModel[2].S = ((touchStatistics.panelLastPins[2] + 0) * 0.25) + .25; 
+					colorModel[3].S = ((touchStatistics.panelLastPins[3] + 0) * 0.25) + .25; 
 
 					// Light -- Change to .S for Darkness Map 
-					colorModel[0].V = 1; // Panel Activity for decay, but use value range
-					colorModel[1].V = 1;
-					colorModel[2].V = 1;
-					colorModel[3].V = 1;
+					colorModel[0].V = util.clamp(util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
+					colorModel[1].V = util.clamp(util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
+					colorModel[2].V = util.clamp(util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
+					colorModel[3].V = util.clamp(util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
 
 					// console.log(colorModel); 
 
@@ -499,7 +495,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				}; 
 
 				ws.send(JSON.stringify({event: eV, name: "colors"}), function(error){
-					if(error) console.error(error); 
+					if(error) console.error("Colors Error", error); 
 				});
 			
 				counter += 0.01;
@@ -536,8 +532,10 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					audioModel: item
 				}; 
 
-				ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
-					if(error) console.error(error); 
+				var	sender = myAmplifier.clientList[0].connection;
+
+				sender.send(JSON.stringify({event: eV, name: "audio"}), function(error){
+					if(error) console.error("Watch Audio", error); 
 				});
 
 				if (item.key === "transpose") {
@@ -575,20 +573,44 @@ Amplifier.prototype.setupOSC = function(options) {
 
 		var newMessage = {};
 
+		if (msg[0] == "/column") {
 
-		newMessage.group = msg[1];
-		newMessage.sensorPin = msg[2]; 
+			newMessage.group = msg[1];
 
-		if (msg[3] == 1) {
-			newMessage.event = "touchdown"; 
+			if (msg[2] == 1) {
+				newMessage.event = "touchdown"; 
+			} else {
+				newMessage.event = "touchup"; 
+			}
+
+			newMessage.sensorPin = 5; 
+
+			//console.log(msg, rinfo);
+			//console.log(newMessage);
+
+			myAmplifier.handleTouches(newMessage); 
+
+
 		} else {
-			newMessage.event = "touchup"; 
+
+			newMessage.group = msg[1];
+			newMessage.sensorPin = msg[2]; 
+
+			if (msg[3] == 1) {
+				newMessage.event = "touchdown"; 
+			} else {
+				newMessage.event = "touchup"; 
+			}
+
+			//console.log(msg, rinfo);
+			console.log(newMessage);
+
+			myAmplifier.handleTouches(newMessage); 
+
 		}
 
-		//console.log(msg, rinfo);
-		//console.log(newMessage);
 
-		myAmplifier.handleTouches(newMessage); 
+
 
 	});
 

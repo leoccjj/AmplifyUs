@@ -27,60 +27,84 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.colorModel = new Array();
 		$scope.audioModel = new Object(); 
 
+		$scope.mode = "direct";
+
 		$scope.memes = ["harlem", "nyan", "happy", "gangnam", "fox", "friday", "daft_punk"]; 
 		$scope.memeIndex = 0; 
 
 		wsserver.on('tick', function(args) {
-        	$scope.touchActivity = args; 
-        	$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
-        	$scope.groupActivity = args.groupActivity;
-        	$scope.serverAvailable = true; 
-        }); 
+			$scope.touchActivity = args; 
+			$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
+			$scope.groupActivity = args.groupActivity;
+			$scope.serverAvailable = true; 
+		}); 
 
 		// Todo: this needs to be a directive or something... 
-        wsserver.on('config', function(args) {
+		wsserver.on('config', function(args) {
 
-        	if ($scope.guiControllers.length == 0) {
+			if ($scope.guiControllers.length == 0) {
 
 				// Config From Server
-	        	$scope.guiVariables = args;
+				$scope.guiVariables = args;
 
-	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'decayRate', .000125, .020));
-	 	 		$scope.guiControllers.push(gui.add($scope.guiVariables, 'addRate', 0.001, 0.100));
+				$scope.guiControllers.push(gui.add($scope.guiVariables, 'decayRate', .000125, .020));
+				$scope.guiControllers.push(gui.add($scope.guiVariables, 'addRate', 0.001, 0.100));
 
-	 	 		_.forEach($scope.guiControllers, function(controller){
-	 	 			controller.onFinishChange(function(value){
-	 	 				$scope.$apply(); 
-	 	 			});
-	 	 		}); 
+				_.forEach($scope.guiControllers, function(controller){
+					controller.onFinishChange(function(value){
+						$scope.$apply(); 
+					});
+				}); 
 
-	 	 		// Local Config
-	 	 		$scope.guiVariables.gain = 0.50;
-	 	 		$scope.guiVariables.tempo = 115; 
+				// Local Config
+				$scope.guiVariables.gain = 0.50;
+				$scope.guiVariables.tempo = 115; 
 
-	 	 		var gainController = gui.add($scope.guiVariables, 'gain', 0.0, 1.0);
-	 	 		var tempoController = gui.add($scope.guiVariables, 'tempo', 105, 130); 
+				$scope.guiVariables.setDirect = function() {
 
-	 	 		$scope.guiControllers.push(gainController);
-	 	 		$scope.guiControllers.push(tempoController);
+					audioEngine.dispatch("intensity", {instrument: "musicbox", intensity: 1.0}); 
+					audioEngine.dispatch("intensity", {instrument: "cello_pluck", intensity: 1.0}); 
+					audioEngine.dispatch("intensity", {instrument: "vibraphone", intensity: 1.0}); 
+					audioEngine.dispatch("intensity", {instrument: "syntklocka_stab_plink", intensity: 1.0}); 
 
-	 	 		gainController.onFinishChange(function(value){
-	 	 			DMAF.masterVolume = value; 
-	 	 			DMAF.context.master.gain.setTargetValueAtTime(value, 0, 0.2);
-	 	 		});
+					audioEngine.dispatch("percussion_volume", {instrument: "a", intensity: 1.0}); 
+					audioEngine.dispatch("percussion_volume", {instrument: "b", intensity: 1.0}); 
+					audioEngine.dispatch("percussion_volume", {instrument: "c", intensity: 1.0}); 
 
-	 	 		tempoController.onFinishChange(function(value){
-	 	 			audioEngine.dispatch("tempo", value);
-	 	 		});
+					audioEngine.dispatch("delay_sync", {instrument: "delay", intensity: "4"}); 
 
- 	 		}
+					$scope.mode = "direct";
+
+				};
+
+				$scope.guiVariables.setModel = function() {
+					audioEngine.loadPatterns();
+					$scope.mode = "model"; 
+				};
+
+				var gainController   = gui.add($scope.guiVariables, 'gain', 0.0, 1.0);
+				var tempoController  = gui.add($scope.guiVariables, 'tempo', 40, 130); 
+				var directController = gui.add($scope.guiVariables, 'setDirect'); 
+				var modelController  = gui.add($scope.guiVariables, 'setModel'); 
+
+				$scope.guiControllers.push(gainController);
+				$scope.guiControllers.push(tempoController);
+
+				gainController.onFinishChange(function(value){
+					DMAF.masterVolume = value; 
+					DMAF.context.master.gain.setTargetValueAtTime(value, 0, 0.2);
+				});
+
+				tempoController.onFinishChange(function(value){
+					audioEngine.dispatch("tempo", value);
+				});
+
+			}
 
 			if(!audioEngine.enabled){
 				console.log("AudioEngine not active", audioEngine);
 				return;
 			}
-
-			audioEngine.loadPatterns();
 
 			//console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
 			//console.log("MusicController", DMAF.Processors.getMusicController());
@@ -97,43 +121,98 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			}); 
 
+			setInterval(function(){
+				audioEngine.dispatch("transpose");
+			}, 4000);
+
 			//setInterval(function() {
 			//	audioEngine.dispatch("transpose");
 			//}, 4 * DMAF.Processors.getMusicController().player.barLength);
 
-        });
+		});
 
 		wsserver.on('touch', function(args) {
 
-        	var touchEvent = args.touch;
+			var touchEvent = args.touch;
 
-        	var pin = touchEvent.sensorPin; 
+			var pin = touchEvent.sensorPin; 
 
-        	console.log(pin);
+			if ($scope.mode == "direct") {
+
+				audioEngine.dispatch("intensity", {instrument: "musicbox", intensity: 1.0}); 
+				audioEngine.dispatch("intensity", {instrument: "cello_pluck", intensity: 1.0}); 
+				audioEngine.dispatch("intensity", {instrument: "vibraphone", intensity: 1.0}); 
+				audioEngine.dispatch("intensity", {instrument: "syntklocka_stab_plink", intensity: 1.0}); 
+
+				audioEngine.dispatch("percussion_volume", {instrument: "a", intensity: 1.0}); 
+				audioEngine.dispatch("percussion_volume", {instrument: "b", intensity: 1.0}); 
+				audioEngine.dispatch("percussion_volume", {instrument: "c", intensity: 1.0}); 
+
+				if (touchEvent.group == 0) {
+
+					if (pin == 0) {
+						audioEngine.dispatch("musicbox", {c: 0, e: 250, n: 68, noteEndTime: 0.500, t: "noteOn", v: 80}); 
+					} else if (pin == 1) {
+						audioEngine.dispatch("musicbox", {c: 120, e: 250, n: 72, noteEndTime: 0.500, t: "noteOn", v: 90}); 
+					} else if (pin == 2) {
+						audioEngine.dispatch("musicbox", {c: 460, e: 250, n: 77, noteEndTime: 0.500, t: "noteOn", v: 127}); 
+					} else if (pin == 3) {
+						audioEngine.dispatch("musicbox", {c: 460, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 127}); 
+					}
 
 
-        	if (pin == 0) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 80}); 
-			} else if (pin == 1) {
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 90}); 
-			} else if (pin == 2) {
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			} else if (pin == 3) {
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 92, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+				} else if (touchEvent.group == 1) {
+
+					if (pin == 0) {
+						audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 80}); 
+					} else if (pin == 1) {
+						audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 90}); 
+					} else if (pin == 2) {
+						audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+					} else if (pin == 3) {
+						audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 91, noteEndTime: 3.500, t: "noteOn", v: 127}); 
+					}
+
+				} else if (touchEvent.group == 2) {
+
+					if (pin == 0) {
+						audioEngine.dispatch("vibraphone", {c: 0, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 80}); 
+					} else if (pin == 1) {
+						audioEngine.dispatch("vibraphone", {c: 120, e: 250, n: 84, noteEndTime: 0.500, t: "noteOn", v: 90}); 
+					} else if (pin == 2) {
+						audioEngine.dispatch("vibraphone", {c: 460, e: 250, n: 89, noteEndTime: 0.500, t: "noteOn", v: 127}); 
+					} else if (pin == 3) {
+						audioEngine.dispatch("vibraphone", {c: 460, e: 250, n: 91, noteEndTime: 0.500, t: "noteOn", v: 127}); 
+					}
+
+				} else if (touchEvent.group == 3) {
+
+					if (pin == 0) {
+						audioEngine.dispatch("syntklocka_stab_plink", {c: 0, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 80}); 
+					} else if (pin == 1) {
+						audioEngine.dispatch("syntklocka_stab_plink", {c: 120, e: 250, n: 84, noteEndTime: 0.500, t: "noteOn", v: 90}); 
+					} else if (pin == 2) {
+						audioEngine.dispatch("syntklocka_stab_plink", {c: 460, e: 250, n: 89, noteEndTime: 0.500, t: "noteOn", v: 127}); 
+					} else if (pin == 3) {
+						audioEngine.dispatch("syntklocka_stab_plink", {c: 460, e: 250, n: 91, noteEndTime: 0.500, t: "noteOn", v: 127}); 
+					}
+
+				}
+
 			}
+			
+		}); 
 
-        }); 
+		wsserver.on('colors', function(colorEvent) {
+			$scope.colorModel = colorEvent.colorModel; 
+		});
 
-        wsserver.on('colors', function(colorEvent) {
-        	$scope.colorModel = colorEvent.colorModel; 
-        });
+		wsserver.on('audio', function(audioEvent) {
+			var model = audioEvent.audioModel;
+			if ($scope.mode == "model") dispatch(model); 
+		}); 
 
-        wsserver.on('audio', function(audioEvent) {
-        	var model = audioEvent.audioModel;
-        	dispatch(model);
-        }); 
-
-        wsserver.connect(appConfig.wsURL);
+		wsserver.connect(appConfig.wsURL);
 
 		$scope.go = function (path) {
 			$location.path(path);
@@ -193,7 +272,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		$scope.$watch('guiVariables', function(newValue, oldValue) {
 
 			if ($scope.serverAvailable)
-			 	wsserver.send({event: "config", config: newValue});
+				wsserver.send({event: "config", config: newValue});
 
 		}, true);
 

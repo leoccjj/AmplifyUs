@@ -73,6 +73,7 @@ var audioModel = {
 		value: false,
 		key: "transpose", 
 	}, 
+	
 	delaySync: "8D"
 
 };
