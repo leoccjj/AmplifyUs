@@ -263,12 +263,12 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				console.log("MemeMode Has Ended!".green); 
 
 				memeMode = false;
-				memeCooldown = true;
+				memeCooldown = false;
 
 				// Meme cooldown (1 minute)
-				setTimeout(function() {
-					memeCooldown = false; 
-				}, 60000); 
+				//setTimeout(function() {
+					//memeCooldown = false; 
+				//}, 60000); 
 
 			}
 
@@ -608,9 +608,6 @@ Amplifier.prototype.setupOSC = function(options) {
 			myAmplifier.handleTouches(newMessage); 
 
 		}
-
-
-
 
 	});
 

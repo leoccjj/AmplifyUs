@@ -160,7 +160,6 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 						audioEngine.dispatch("musicbox", {c: 460, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 127}); 
 					}
 
-
 				} else if (touchEvent.group == 1) {
 
 					if (pin == 0) {
@@ -210,6 +209,11 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 		wsserver.on('audio', function(audioEvent) {
 			var model = audioEvent.audioModel;
 			if ($scope.mode == "model") dispatch(model); 
+			else if (model.meme) {
+				$scope.playMeme($scope.memes[$scope.memeIndex % 7]); 
+				$scope.memeIndex++; 
+			}
+				
 		}); 
 
 		wsserver.connect(appConfig.wsURL);
@@ -303,10 +307,6 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 			}
 			else if (model.instrument) {
 				audioEngine.dispatch(model.key, {instrument: model.instrument, intensity: model.value}); 
-			}
-			else if (model.meme) {
-				$scope.playMeme($scope.memes[$scope.memeIndex % 7]); 
-				$scope.memeIndex++; 
 			}
 			else {
 				audioEngine.dispatch(model.key); 
