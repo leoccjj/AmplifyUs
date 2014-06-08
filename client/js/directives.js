@@ -30,7 +30,7 @@ app.directive('touchChart', function () {
 		data = d3.range(n).map(random);
 
 	var margin = {top: -2, right: 0, bottom: 20, left: 0},
-		width = 840 - margin.left - margin.right,
+		width = 540 - margin.left - margin.right,
 		height = 200 - margin.top - margin.bottom;
 
 	var x = d3.scale.linear()

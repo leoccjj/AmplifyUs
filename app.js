@@ -265,10 +265,11 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				memeMode = false;
 				memeCooldown = false;
 
-				// Meme cooldown (1 minute)
-				//setTimeout(function() {
-					//memeCooldown = false; 
-				//}, 60000); 
+				// Meme cooldown (30 Seconds )
+				setTimeout(function() {
+					memeCooldown = false; 
+					console.log("MemeMode Ready!".yellow); 
+				}, 30000); 
 
 			}
 
