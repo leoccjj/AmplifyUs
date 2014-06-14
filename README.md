@@ -9,7 +9,7 @@ Amplify Us is a site-specific installation for Minneapolis’ Orchestra Hall tha
 
 Unique, architecturally-inspired touch panels were designed as the focal point of the installation, acting as inputs into a system which orchestrates a playful show of music and light. The installation explores how conversations and interactions in urban public spaces are influenced by a building that can respond visually and musically. With an array of controllable theatrical lights illuminating features of the Hall’s interior, a musical score unfolds and responds from interactions on the touch panels located on structural columns in the Hall’s entrance. 
 
-Support for Amplify Us came from the EYEO Festival. Additional support came from Intel Labs' User Experience Research group and Perceptual Computing group.
+Support for Amplify Us came from the EYEO Festival. Further support came from Intel Labs' User Experience Research (UXR), Perceptual Computing (PerC), and the Minnesota Orchestral Association. Additional thanks to the organizers of the Northern Spark festival. 
 
 # Structure
 
