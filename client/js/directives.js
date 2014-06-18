@@ -133,7 +133,6 @@ app.directive('colorVisualizer', function () {
 
 			var rgbString = "rgb(" + updatedColor.r + "," + updatedColor.g + "," + updatedColor.b + ")"; 
 
-			//console.log(rgbString);
 			var myLayer = $('canvas').getLayer("circle-" + index);
 
 			if ( myLayer === undefined ) {
@@ -153,8 +152,7 @@ app.directive('colorVisualizer', function () {
 				myLayer.fillStyle = rgbString; 
 			}
 
-			$('canvas').drawLayers(); // ("circle-" + index);
-
+			$('canvas').drawLayers();
 		});
 
 	}; 
@@ -182,6 +180,9 @@ app.directive('colorVisualizer', function () {
 			circleRadius = Math.floor(Math.min(canvasElem.width, canvasElem.height) / 2) - 2;
 
 			/* 
+
+			// Draws the initial HSV wheel. This was later exported as a PNG since this only 
+			// really needs to happen once. 
 
 			var imgData = canvasCtx.getImageData(0, 0, canvasElem.width, canvasElem.height);
 			var pix = imgData.data;
@@ -239,7 +240,7 @@ app.directive('colorVisualizer', function () {
 	
 			*/ 
 
-			// Manually saved this to the asssets directory 
+			// Manually saved this to the asssets/ directory (wheel.png)
 			// canvasCtx.putImageData(imgData, 0, 0);
 
 			//var dataUrl = canvasElem.toDataURL();
@@ -273,16 +274,7 @@ app.directive('lightVisualizer', function () {
 		templateUrl: "partials/light-visualizer", 
 
 		link: function (scope, element, attrs) {
-
-			/* 
-			scope.$watch('model', function (newVal, oldVal) {
-
-				// console.log(newVal); 
-				
-			}, true);
-
-			*/ 
-
+			
 		}
 
 	};
