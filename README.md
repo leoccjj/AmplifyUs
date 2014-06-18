@@ -1,13 +1,15 @@
-EYEO_AmplifyUs
+Amplify Us
 ==============
 
-AmplifyUs interactive installation in the Minneapolis Orchestra Hall for EYEO / Northern Spark festival 2014.
+Amplify Us is an interactive installation in the Minneapolis Orchestra Hall for EYEO / Northern Spark festival 2014. This repository contains code for lighting/sound control and a simulation environment for prototyping interactions. 
+
+![Hall Exterior - EYEO 2014 Reception](https://raw.githubusercontent.com/ddiakopoulos/EYEO_AmplifyUs/master/assets/orchestra_hall_exterior_eyeo2014.jpg)
 
 # About 
 
 Amplify Us is a site-specific installation for Minneapolis’ Orchestra Hall that senses, visualizes, and sonifies the presence of people in building’s entrance. Commissioned by EYEO, a yearly conference on the intersection of arts and engineering, the installation is co-produced by Northern Spark, a yearly city-wide arts festival. 
 
-Unique, architecturally-inspired touch panels were designed as the focal point of the installation, acting as inputs into a system which orchestrates a playful show of music and light. The installation explores how conversations and interactions in urban public spaces are influenced by a building that can respond visually and musically. With an array of controllable theatrical lights illuminating features of the Hall’s interior, a musical score unfolds and responds from interactions on the touch panels located on structural columns in the Hall’s entrance. 
+Architecturally-inspired touch panels were designed as the focal point of the installation, acting as inputs into a system which orchestrates a playful show of music and light. The installation explores how conversations and interactions in urban public spaces are influenced by a building that can respond both visually and musically. With an array of controllable theatrical lights illuminating features of the Hall’s interior, a musical score unfolds and responds from interactions on the touch panels located on structural columns in the Hall’s entrance. 
 
 Support for Amplify Us came from the EYEO Festival. Further support came from Intel Labs' User Experience Research (UXR), Perceptual Computing (PerC), and the Minnesota Orchestral Association. Additional thanks to the organizers of the Northern Spark festival. 
 
