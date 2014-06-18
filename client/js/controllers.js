@@ -7,6 +7,34 @@ var appControllers = angular.module('myApp.controllers', []);
 var audioEngine = new DMAF.Framework(); 
 var gui = new dat.GUI();
 
+var musicboxNotes = [
+	{c: 0, e: 250, n: 68, noteEndTime: 0.750, t: "noteOn", v: 127}, 
+	{c: 0, e: 250, n: 72, noteEndTime: 0.750, t: "noteOn", v: 127}, 
+	{c: 0, e: 250, n: 77, noteEndTime: 0.750, t: "noteOn", v: 127}, 
+	{c: 0, e: 250, n: 80, noteEndTime: 0.750, t: "noteOn", v: 127}
+];
+
+var celloNotes = [
+	{c: 0, e: 250, n: 80, noteEndTime: 3.750, t: "noteOn", v: 127},
+	{c: 0, e: 250, n: 84, noteEndTime: 3.750, t: "noteOn", v: 127},
+	{c: 0, e: 250, n: 89, noteEndTime: 3.750, t: "noteOn", v: 127},
+	{c: 0, e: 250, n: 91, noteEndTime: 3.750, t: "noteOn", v: 127}
+];
+
+var rhodesNotes = [
+	{c: 0, e: 250, n: 80 - 12, noteEndTime: 0.750, t: "noteOn", v: 127},
+	{c: 0, e: 250, n: 84 - 12, noteEndTime: 0.750, t: "noteOn", v: 127},
+	{c: 0, e: 250, n: 89 - 12, noteEndTime: 0.750, t: "noteOn", v: 127},
+	{c: 0, e: 250, n: 91 - 12, noteEndTime: 0.750, t: "noteOn", v: 127}
+];
+
+var plinkNotes = [
+	{c: 0, e: 250, n: 80, noteEndTime: 1.0, t: "noteOn", v: 1},
+	{c: 0, e: 250, n: 84, noteEndTime: 1.0, t: "noteOn", v: 1},
+	{c: 0, e: 250, n: 89, noteEndTime: 1.0, t: "noteOn", v: 1},
+	{c: 0, e: 250, n: 91, noteEndTime: 1.0, t: "noteOn", v: 1}
+]; 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,22 +57,16 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		$scope.mode = "direct";
 
-		$scope.memes = ["harlem", "nyan", "happy", "gangnam", "fox", "friday", "daft_punk"]; 
-		$scope.memeIndex = 0; 
+		$scope.memes = ["harlem", "nyan", "happy", "gangnam", "fox", "friday", "daft"]; 
+		$scope.memeIndex = 0; 	
 
-		wsserver.on('tick', function(args) {
-			$scope.touchActivity = args; 
-			$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
-			$scope.groupActivity = args.groupActivity;
-			$scope.serverAvailable = true; 
-		}); 
+		wsserver.connect(appConfig.wsURL);
 
-		// Todo: this needs to be a directive or something... 
 		wsserver.on('config', function(args) {
 
 			if ($scope.guiControllers.length == 0) {
 
-				// Config From Server
+				// Config Variables from Server
 				$scope.guiVariables = args;
 
 				$scope.guiControllers.push(gui.add($scope.guiVariables, 'decayRate', .000125, .020));
@@ -56,20 +78,30 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 					});
 				}); 
 
-				// Local Config
+				// Local Configuration Variables 
 				$scope.guiVariables.gain = 0.50;
-				$scope.guiVariables.tempo = 115; 
+				$scope.guiVariables.tempo = 60; 
 
+				var gainController = gui.add($scope.guiVariables, 'gain', 0.0, 1.0);
+				var tempoController = gui.add($scope.guiVariables, 'tempo', 40, 130); 
+
+				// This mode gives each touch strip control over a note. Columns are given different instruments.   
 				$scope.guiVariables.setDirect = function() {
 
+					// Give a little percussion to this mode...
+					// audioEngine.loadBeatPatterns();
+					// audioEngine.dispatch("percussion_volume", {instrument: "a", intensity: 0.5}); 
+					// audioEngine.dispatch("percussion_volume", {instrument: "b", intensity: 0.20}); 
+					// audioEngine.dispatch("percussion_volume", {instrument: "c", intensity: 0.33}); 
+
+					// Set probabilities to 1.0 for all the instruments so the controller
+					// doesn't filter some of them out
 					audioEngine.dispatch("intensity", {instrument: "musicbox", intensity: 1.0}); 
 					audioEngine.dispatch("intensity", {instrument: "cello_pluck", intensity: 1.0}); 
 					audioEngine.dispatch("intensity", {instrument: "vibraphone", intensity: 1.0}); 
 					audioEngine.dispatch("intensity", {instrument: "syntklocka_stab_plink", intensity: 1.0}); 
-
-					audioEngine.dispatch("percussion_volume", {instrument: "a", intensity: 1.0}); 
-					audioEngine.dispatch("percussion_volume", {instrument: "b", intensity: 1.0}); 
-					audioEngine.dispatch("percussion_volume", {instrument: "c", intensity: 1.0}); 
+					audioEngine.dispatch("intensity", {instrument: "rhodes_noize", intensity: 1.0}); 
+					audioEngine.dispatch("intensity", {instrument: "synth_appointed_piano", intensity: 1.0}); 
 
 					audioEngine.dispatch("delay_sync", {instrument: "delay", intensity: "4"}); 
 
@@ -77,13 +109,14 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 				};
 
+				// This mode loads pre-defined MIDI files. Notes are played according to probabilities set
+				// by an activity model of touches on the strips. The model sends data via the tick 
+				// event to update the audio engine. 
 				$scope.guiVariables.setModel = function() {
 					audioEngine.loadPatterns();
 					$scope.mode = "model"; 
 				};
 
-				var gainController   = gui.add($scope.guiVariables, 'gain', 0.0, 1.0);
-				var tempoController  = gui.add($scope.guiVariables, 'tempo', 40, 130); 
 				var directController = gui.add($scope.guiVariables, 'setDirect'); 
 				var modelController  = gui.add($scope.guiVariables, 'setModel'); 
 
@@ -92,12 +125,15 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 				gainController.onFinishChange(function(value){
 					DMAF.masterVolume = value; 
-					DMAF.context.master.gain.setTargetValueAtTime(value, 0, 0.2);
+					DMAF.context.master.gain.setTargetValueAtTime(DMAF.masterVolume, 0, 0.2);
 				});
 
 				tempoController.onFinishChange(function(value){
 					audioEngine.dispatch("tempo", value);
 				});
+
+				// DEFAULT TO DIRECT MODE:
+				$scope.guiVariables.setDirect(); 
 
 			}
 
@@ -106,31 +142,58 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 				return;
 			}
 
-			//console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
-			//console.log("MusicController", DMAF.Processors.getMusicController());
-			//console.log("SynthManager", DMAF.Managers.getSynthManager());
+			// Debug the audio engine objects: 
+			// console.log("AudioBusManager", DMAF.Managers.getAudioBusManager());
+			// console.log("MusicController", DMAF.Processors.getMusicController());
+			// console.log("SynthManager", DMAF.Managers.getSynthManager());
 
 			audioEngine.dispatch("musicOn");
+			audioEngine.dispatch("tempo", $scope.guiVariables.tempo);
 
 			audioEngine.setMemeCallback(function(){
 
+				// Instrument Bus (pingping)
 				var audioBusManager = DMAF.Managers.getAudioBusManager();
-				audioBusManager.activeAudioBusInstances.output_bus.output.gain.setTargetValueAtTime(DMAF.masterVolume, 0, 0.25);
+				audioBusManager.activeAudioBusInstances.pingping.output.gain.setTargetValueAtTime(1.0, 0, 0.01);
 
 				wsserver.send({event: "meme-stop"});
 
+				// Set Master (everyone)
+				DMAF.context.master.gain.setTargetValueAtTime(0.50, 0, 0.0);
+
 			}); 
 
+			// Key-transpose everything
 			setInterval(function(){
 				audioEngine.dispatch("transpose");
-			}, 4000);
-
-			//setInterval(function() {
-			//	audioEngine.dispatch("transpose");
-			//}, 4 * DMAF.Processors.getMusicController().player.barLength);
+			}, 6500);
 
 		});
+	
+		wsserver.on('tick', function(args) {
+			$scope.touchActivity = args; 
+			$scope.meanOnsetDurations = parseInt(args.meanOnsetDuration, 10);
+			$scope.groupActivity = args.groupActivity;
+			$scope.serverAvailable = true; 
+		}); 
 
+		// DMX/panel colors 
+		wsserver.on('colors', function(colorEvent) {
+			$scope.colorModel = colorEvent.colorModel; 
+		});
+
+		// Audio events pending dispatch
+		wsserver.on('audio', function(audioEvent) {
+			var model = audioEvent.audioModel;
+			if ($scope.mode == "model") dispatch(model); 
+			else if (model.meme) {
+				$scope.playMeme($scope.memes[$scope.memeIndex]); 
+				$scope.memeIndex = ($scope.memeIndex + 1) % 7; 
+			}
+				
+		}); 
+
+		// Notes triggered in direct-control mode 
 		wsserver.on('touch', function(args) {
 
 			var touchEvent = args.touch;
@@ -139,139 +202,50 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 			if ($scope.mode == "direct") {
 
-				audioEngine.dispatch("intensity", {instrument: "musicbox", intensity: 1.0}); 
-				audioEngine.dispatch("intensity", {instrument: "cello_pluck", intensity: 1.0}); 
-				audioEngine.dispatch("intensity", {instrument: "vibraphone", intensity: 1.0}); 
-				audioEngine.dispatch("intensity", {instrument: "syntklocka_stab_plink", intensity: 1.0}); 
-
-				audioEngine.dispatch("percussion_volume", {instrument: "a", intensity: 1.0}); 
-				audioEngine.dispatch("percussion_volume", {instrument: "b", intensity: 1.0}); 
-				audioEngine.dispatch("percussion_volume", {instrument: "c", intensity: 1.0}); 
-
 				if (touchEvent.group == 0) {
-
-					if (pin == 0) {
-						audioEngine.dispatch("musicbox", {c: 0, e: 250, n: 68, noteEndTime: 0.500, t: "noteOn", v: 80}); 
-					} else if (pin == 1) {
-						audioEngine.dispatch("musicbox", {c: 120, e: 250, n: 72, noteEndTime: 0.500, t: "noteOn", v: 90}); 
-					} else if (pin == 2) {
-						audioEngine.dispatch("musicbox", {c: 460, e: 250, n: 77, noteEndTime: 0.500, t: "noteOn", v: 127}); 
-					} else if (pin == 3) {
-						audioEngine.dispatch("musicbox", {c: 460, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 127}); 
-					}
-
+					// Column 1 (Lobby)
+					audioEngine.dispatch("musicbox", musicboxNotes[pin]);
 				} else if (touchEvent.group == 1) {
-
-					if (pin == 0) {
-						audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 80}); 
-					} else if (pin == 1) {
-						audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 90}); 
-					} else if (pin == 2) {
-						audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-					} else if (pin == 3) {
-						audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 91, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-					}
-
-				} else if (touchEvent.group == 2) {
-
-					if (pin == 0) {
-						audioEngine.dispatch("vibraphone", {c: 0, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 80}); 
-					} else if (pin == 1) {
-						audioEngine.dispatch("vibraphone", {c: 120, e: 250, n: 84, noteEndTime: 0.500, t: "noteOn", v: 90}); 
-					} else if (pin == 2) {
-						audioEngine.dispatch("vibraphone", {c: 460, e: 250, n: 89, noteEndTime: 0.500, t: "noteOn", v: 127}); 
-					} else if (pin == 3) {
-						audioEngine.dispatch("vibraphone", {c: 460, e: 250, n: 91, noteEndTime: 0.500, t: "noteOn", v: 127}); 
-					}
-
+					// Column 2 (Tier 1, Bottom)
+					audioEngine.dispatch("cello_pluck", celloNotes[pin]); 
+				}  else if (touchEvent.group == 2) {
+					// Column 3 (Tier 2)
+					audioEngine.dispatch("rhodes_noize", rhodesNotes[pin]); 
 				} else if (touchEvent.group == 3) {
-
-					if (pin == 0) {
-						audioEngine.dispatch("syntklocka_stab_plink", {c: 0, e: 250, n: 80, noteEndTime: 0.500, t: "noteOn", v: 80}); 
-					} else if (pin == 1) {
-						audioEngine.dispatch("syntklocka_stab_plink", {c: 120, e: 250, n: 84, noteEndTime: 0.500, t: "noteOn", v: 90}); 
-					} else if (pin == 2) {
-						audioEngine.dispatch("syntklocka_stab_plink", {c: 460, e: 250, n: 89, noteEndTime: 0.500, t: "noteOn", v: 127}); 
-					} else if (pin == 3) {
-						audioEngine.dispatch("syntklocka_stab_plink", {c: 460, e: 250, n: 91, noteEndTime: 0.500, t: "noteOn", v: 127}); 
-					}
-
+					// Column 4 (Tier 3, Top)
+					audioEngine.dispatch("syntklocka_stab_plink", plinkNotes[pin]); 
 				}
 
 			}
 			
 		}); 
-
-		wsserver.on('colors', function(colorEvent) {
-			$scope.colorModel = colorEvent.colorModel; 
-		});
-
-		wsserver.on('audio', function(audioEvent) {
-			var model = audioEvent.audioModel;
-			if ($scope.mode == "model") dispatch(model); 
-			else if (model.meme) {
-				$scope.playMeme($scope.memes[$scope.memeIndex % 7]); 
-				$scope.memeIndex++; 
-			}
-				
-		}); 
-
-		wsserver.connect(appConfig.wsURL);
-
-		$scope.go = function (path) {
-			$location.path(path);
-		}
-
+		
 		$scope.registerTouch = function(event, group) {
 			wsserver.send({event: event, group: group, sensorPin: 3}); 
 		}; 
 
-		/* 
-		$scope.pluck = function(pin) {
+		$scope.playMeme = function(memeName) {
 
-			wsserver.send({event: "touchdown", group: 0, sensorPin: pin});
+			var audioBusManager = DMAF.Managers.getAudioBusManager();
 
-			//var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
-			//console.log(DMAF.Processors.getMusicController().player.getCurrentBeatTime()); 
+			// Instruments -- turn off 
+			audioBusManager.activeAudioBusInstances.pingping.output.gain.setTargetValueAtTime(0.0, 0, 0.01);
 
-			// setTimeout()
+			DMAF.context.master.gain.setTargetValueAtTime(0.075, 0, 0.0);
 
-			console.log(pin);
+			audioEngine.dispatch("scratch");
 
-			if (pin == 1) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 77, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			} else if (pin == 2) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 91, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			} else if (pin == 3) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			}
+			console.log('Playing Meme: ', memeName);
 
+			setTimeout(function() {
 
-			if (pin == 1) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			} else if (pin == 2) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 100}); 
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			} else if (pin == 3) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 90}); 
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 100}); 
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			} else if (pin == 4) {
-				audioEngine.dispatch("cello_pluck", {c: 0, e: 250, n: 80, noteEndTime: 3.500, t: "noteOn", v: 80}); 
-				audioEngine.dispatch("cello_pluck", {c: 120, e: 250, n: 84, noteEndTime: 3.500, t: "noteOn", v: 90}); 
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 89, noteEndTime: 3.500, t: "noteOn", v: 100}); 
-				audioEngine.dispatch("cello_pluck", {c: 460, e: 250, n: 92, noteEndTime: 3.500, t: "noteOn", v: 127}); 
-			}
+				DMAF.context.master.gain.setTargetValueAtTime(0.275, 0, 0.0);
+				audioEngine.dispatch(memeName);
+				wsserver.send({event: "meme-start"});
 
-		}; 
+			}, 750);
 
-		*/ 
+		};
 
 		$scope.$watch('guiVariables', function(newValue, oldValue) {
 
@@ -280,27 +254,7 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 
 		}, true);
 
-		$scope.playMeme = function(memeName) {
-
-			audioEngine.dispatch("scratch");
-
-			setTimeout(function() {
-
-				var audioBusManager = DMAF.Managers.getAudioBusManager();
-				audioBusManager.activeAudioBusInstances.output_bus.output.gain.setTargetValueAtTime(0.0, 0, 0.25);
-
-				audioEngine.dispatch(memeName);
-
-				wsserver.send({event: "meme-start"});
-
-			}, 700);
-
-		}
-
 		function dispatch(model) {
-
-			//var nextTime = DMAF.Processors.getMusicController().player.getNextBeatTime(); 
-			//console.log(DMAF.Processors.getMusicController().player.getCurrentBeatTime()); 
 
 			if (model.wait) {
 				audioEngine.dispatch(model.key, model.value); 
@@ -312,26 +266,8 @@ appControllers.controller('AppController', ['$q', '$rootScope', '$scope', '$loca
 				audioEngine.dispatch(model.key); 
 			}
 
-		}
+		}; 
 
 	}
 
 ]);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-appControllers.controller('MenuController', ['$q', '$rootScope', '$scope', '$location', 'api', 
-
-	function($q, $rootScope, $scope, $location, api) {
-
-		$scope.go = function (path) {
-			$location.path(path);
-		}
-
-	}
-
-]);
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
