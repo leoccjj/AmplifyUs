@@ -39,12 +39,6 @@ var universe = null;
 
 moment().format();
 
-// [X] Last Touch Strip => Saturation
-// [X] Column Activity => Value
-// [] Impulse for touches => Activity Model
-// [] Instant Touch Sound 
-// [] Faster Loop for DMX
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,17 +69,12 @@ var universeMap = {};
 
 var colorModel = new Array();
 
-colorModel[0] = new HSVColor(0,1,1); 
-colorModel[1] = new HSVColor(0,1,1); 
-colorModel[2] = new HSVColor(0,1,1); 
-colorModel[3] = new HSVColor(0,1,1); 
+for (var i = 0; i < 4; i++) {
+	colorModel[i] = new HSVColor(0,1,1); 	
+}
 
 // Cool to Warm
-var activityHueInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#ff5400']);
-
-var GalileoAddresses = ['192.168.1.101', '192.168.1.102', '192.168.1.103', '192.168.1.104']; 
-
-var handConnectionEvents = new buf(2); 
+var activityHueInterpolator = chroma.interpolate.bezier(['#66c1ec', '#44e038', '#ff0000']);
 
 var memeMode = false; 
 var memeCooldown = false; 
@@ -93,9 +82,16 @@ var memeCooldown = false;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+var GalileoAddresses = ['192.168.1.101', '192.168.1.104', '192.168.1.102', '192.168.1.103']; 
+
+var dmxLightMap = [1, 2, 3, 0];
+var galileoPanelMap = [0, 2, 3, 1];
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 var tickTimer = null; 
 var colorTimer = null; 
-var modelControlTimer = null; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +118,7 @@ function Amplifier(options) {
 	this.options.dmx = this.options.dmx || {};
 	this.options.dmx.live = this.options.dmx.live || false; 
 	this.options.dmx.numLights = 4; 
-	this.options.dmx.channelsPerLight = 6; 
+	this.options.dmx.channelsPerLight = 10; 
 	this.options.dmx.universeSize = this.options.dmx.numLights * this.options.dmx.channelsPerLight; 
 	this.setupDMX(this.options.dmx); 
 
@@ -140,16 +136,13 @@ Amplifier.prototype.handleTouches = function(touch) {
 
 		newTouchEvent.group = touch.group; 
 		newTouchEvent.sensorPin = touch.sensorPin; 
-
 		newTouchEvent.timestamp = moment().valueOf();
 
 		touchStatistics.addEvent(newTouchEvent);
-
 		touchStatistics.add(); 
 
 		var logMessage = "Touch: " + touch.group + "\tTime: " + now.valueOf() + "\t Sensor: " + newTouchEvent.sensorPin ; 
 		console.log(logMessage.green); 
-
 
 		var ws = myAmplifier.clientList[0].connection;
 
@@ -161,33 +154,10 @@ Amplifier.prototype.handleTouches = function(touch) {
 			if(error) console.error("Touch", error); 
 		});
 
-		// Check for hand connection event conditions (bridging panels 2 + 3 together)
-		if (newTouchEvent.sensorPin === 5) {
-			
-			if (!memeCooldown) {
-
-				var eV = {
-					audioModel: {
-						meme: true
-					}
-				}; 
-
-				ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
-					if(error) console.error("Audio/Meme", error); 
-				});
-
-				memeMode = true; 
-
-			}
-
-		}
-
 	}
 
 	else if (touch.event == "touchup") {
-
 		// Do nothing for now
-
 	}
 
 }; 
@@ -211,17 +181,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		clearInterval(tickTimer);
 		clearInterval(colorTimer);
-		clearInterval(modelControlTimer); 
-
-		_.each(audioModel, function(item) {
-
-			if (audioModel.item) {
-				unwatch(item);
-				console.log(item);
-			}
-			
-		}); 
-
 
 		console.log("[Websocket] // New Connection From: ".blue, newClient);
 
@@ -232,13 +191,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		startTicking(); 	// Client control/notification
 		startColorLoop();   // Main control loop
 
-		// Debugging only! 
-		modelControlTimer = setInterval(function(){
-			
-			audioModel.transpose.value = true; 
-
-		}, 9000);
-
+		// Send configuration data down to the client 
 		ws.send(JSON.stringify({event: touchStatistics.parameters , name: "config"}), function(error){
 			if(error) console.log("Config", error); 
 		}); 
@@ -263,12 +216,12 @@ Amplifier.prototype.setupWebsocket = function(options) {
 				console.log("MemeMode Has Ended!".green); 
 
 				memeMode = false;
-				memeCooldown = false;
+				memeCooldown = true;
 
-				// Meme cooldown (30 Seconds )
+				// Meme cooldown period 
 				setTimeout(function() {
 					memeCooldown = false; 
-					console.log("MemeMode Ready!".yellow); 
+					console.log("MemeMode Ready Again!".yellow); 
 				}, 30000); 
 
 			}
@@ -276,7 +229,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			else if (newMessage.event == "meme-start") {
 
 				console.log("MemeMode Has Started! ".red); 
-
 				memeMode = true;
 
 			}
@@ -284,10 +236,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 		});
 
 		ws.on('close', function() {
-			
-			clearInterval(tickTimer);
-			clearInterval(colorTimer);
-			clearInterval(modelControlTimer);
 
 			// client.connection._socket._handle
 			console.log("[Websocket Connection Closed]".red); 
@@ -309,14 +257,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		};
 
-		function updateTempo() {
-			var newTempo = util.map(touchStatistics.touchActivity, 0.0, 1.0, 105, 125); 
-			audioModel.tempo.value = newTempo;
-		}; 
-
-		var throttledTempo = _.throttle(updateTempo, 5000);
-
-		// Loop to update the GUI
+		// Loop to update the client 
 		function startTicking() {
 
 			var tick = {}; 
@@ -335,8 +276,9 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error("Tick", error); 
 				});
 
-				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); // move to 3 maybe? 
-				// audioModel.celloIntensity.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);  
+				// The following only affects the client if the client is in the 'model' mode.
+				// ... notes would be triggered based on a [0-1] probability. 
+				audioModel.musicbox.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);   
 				audioModel.patatap_a.value = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0); 
 
 				audioModel.plinkIntensity.value = util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 0.80); 
@@ -359,8 +301,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 			console.log(dmxOptions); 
 
 			var counter = 0;
-			var colorMode = 0; 
-			var p1, p2, p3, p4; 
 			var osc1, osc2, osc3, osc4; 
 
 			// TODO: Tighten this loop as much as possible
@@ -387,62 +327,29 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				} else {
 
-					// make the installation breathe a little via hue
-					osc1 = oz.sine(counter, .7100) * 0.009; 
-					osc2 = oz.sine(counter, .7300) * 0.009;
-					osc3 = oz.sine(counter, .7600) * 0.009;
-					osc4 = oz.sine(counter, .7900) * 0.009;
+					// make the lights oscillate a tiny bit in hue
+					osc1 = oz.sine(counter, .7100) * 0.015; 
+					osc2 = oz.sine(counter, .7300) * 0.015;
+					osc3 = oz.sine(counter, .7600) * 0.015;
+					osc4 = oz.sine(counter, .7900) * 0.015;
 
 					// separate the hue a bit 
-					var osc = [osc1, osc2 + .04 , osc3 + 0.07, osc4 + 0.12];
+					var hueValues = [osc1, osc2 + .02 , osc3 + 0.04, osc4 + 0.06];
 
-					p1 = easingMap(touchStatistics.panelActivity[0], 0.0, 1.0, 0.0, 1.0);
-					p2 = easingMap(touchStatistics.panelActivity[1], 0.0, 1.0, 0.0, 1.0);
-					p3 = easingMap(touchStatistics.panelActivity[2], 0.0, 1.0, 0.0, 1.0);
-					p4 = easingMap(touchStatistics.panelActivity[3], 0.0, 1.0, 0.0, 1.0);
+					colorModel[0].S = util.clamp(((touchStatistics.panelLastPins[0]) * 0.25) + .50, 0.33, 1.00); 
+					colorModel[1].S = ((touchStatistics.panelLastPins[1]) * 0.25) + .25; 
+					colorModel[2].S = ((touchStatistics.panelLastPins[2]) * 0.25) + .25; 
+					colorModel[3].S = ((touchStatistics.panelLastPins[3]) * 0.25) + .25; 
 
-					var t1 = util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 1.0, 2.0);
-
-					// Debug Panel Activity
-					// console.log(touchStatistics.panelActivity);
-					// ==========
-
-					// Not used right now 
-					colorMode = parseInt(util.map(touchStatistics.touchActivity, 0, 1, 0, 4), 10); 
-
-					// Dimitri Test: 
-
-					/*  
-					colorModel[0].S = p1;
-					colorModel[1].S = p2;
-					colorModel[2].S = p3;
-					colorModel[3].S = p4;
-
-					// Dark instead of light 
-					colorModel[0].V = p1;
-					colorModel[1].V = p2;
-					colorModel[2].V = p3;
-					colorModel[3].V = p4;
-					*/ 
-
-					// Vicky Test: 
-
-					colorModel[0].S = ((touchStatistics.panelLastPins[0] + 0) * 0.25) + .25; 
-					colorModel[1].S = ((touchStatistics.panelLastPins[1] + 0) * 0.25) + .25; 
-					colorModel[2].S = ((touchStatistics.panelLastPins[2] + 0) * 0.25) + .25; 
-					colorModel[3].S = ((touchStatistics.panelLastPins[3] + 0) * 0.25) + .25; 
-
-					// Light -- Change to .S for Darkness Map 
-					colorModel[0].V = util.clamp(util.map(touchStatistics.panelActivity[0], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
-					colorModel[1].V = util.clamp(util.map(touchStatistics.panelActivity[1], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
-					colorModel[2].V = util.clamp(util.map(touchStatistics.panelActivity[2], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
-					colorModel[3].V = util.clamp(util.map(touchStatistics.panelActivity[3], 0.0, 1.0, 0.50, 1.0), 0.5, 1.0);
-
-					// console.log(colorModel); 
+					// Light
+					colorModel[0].V = 1; 
+					colorModel[1].V = 1;
+					colorModel[2].V = 1; 
+					colorModel[3].V = 1; 
 
 					for (var i = 0; i < 4; i++){
-						colorModel[i].H = util.clamp((activityHueInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + osc[i], 0.0, 1.0);
-					}		
+						colorModel[i].H = util.clamp((activityHueInterpolator(touchStatistics.touchActivity).hsv()[0] / 360) + hueValues[i], 0.0, 1.0);
+					}	
 
 				}
 
@@ -452,44 +359,47 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 				// Universe increments in groups of six because (that's how many channels the lights use (but, we only use the first three))
 				var idx = 0;
-				for (var i = 0; i < dmxOptions.universeSize; i += 6 ) {
-					universeMap[i] = colorModel[idx].toRgb().R * 255; 
-					universeMap[i+1] = colorModel[idx].toRgb().G * 255; 
-					universeMap[i+2] = colorModel[idx].toRgb().B * 255; 
+				for (var i = 0; i < dmxOptions.universeSize; i += 10 ) {
+					universeMap[i] = colorModel[dmxLightMap[idx]].toRgb().R * 255; 
+					universeMap[i+1] = colorModel[dmxLightMap[idx]].toRgb().G * 255; 
+					universeMap[i+2] = colorModel[dmxLightMap[idx]].toRgb().B * 255; 
 					idx++;
 				}
 
 				for (var c = 0; c < myAmplifier.oscClients.length; c++) {
 
-					var R = Math.floor(colorModel[c].toRgb().R * 255); 
-					var G = Math.floor(colorModel[c].toRgb().G * 255); 
-					var B = Math.floor(colorModel[c].toRgb().B * 255); 
+					var R = Math.floor(colorModel[c].toRgb().R * 255).toFixed(0); 
+					var G = Math.floor(colorModel[c].toRgb().G * 255).toFixed(0); 
+					var B = Math.floor(colorModel[c].toRgb().B * 255).toFixed(0); 
 
-					R.toFixed(0);
-					G.toFixed(0);
-					B.toFixed(0);
+					// Grr!! Panel 3 has a swapped B and G wire!! 
+					if (c == 3) {
+						var tmp;
+						tmp = B;
+						B = G;
+						G = tmp; 
+					}
 
-					if (touchStatistics.panelActivity[c] <= 0.075 && !memeMode) {
+					// Breathe when no activity, otherwise send down the real color 
+					if (touchStatistics.panelActivity[c] <= 0.0025 && !memeMode) {
 						myAmplifier.oscClients[c].send("p|" + breathe + "|" + breathe + "|" + breathe);
 					} else {
 						myAmplifier.oscClients[c].send("p|" + R.toString() + "|" + G.toString() + "|" + B.toString());
-
 					}
 
-					// Black when in cooldown mode (won't trigger)
+					// Black out the panel when in cooldown mode (won't trigger)
 					if (memeCooldown) {
 						myAmplifier.oscClients[c].send("c|0|0|0");
+					} else if (memeMode) {
+						myAmplifier.oscClients[c].send("c|" + R.toString() + "|" + G.toString() + "|" + B.toString());
 					} else {
-						// gesture between panels that a connection should be made! 
+						// Indicate between panels that a connection should be made! 
 						myAmplifier.oscClients[c].send("c|" + breathe + "|" + breathe + "|" + breathe);
-						// myAmplifier.oscClients[c].send("c|" + 255 - breathe + "|" + 255 - breathe + "|" + 255 - breathe);
 					}
 
 				}
 
 				if (dmxOptions.live) universe.update(universeMap);
-
-				// console.log(colorModel);
 
 				var eV = {
 					colorModel: [colorModel[0].toString(), colorModel[1].toString(), colorModel[2].toString(), colorModel[3].toString()]
@@ -523,6 +433,7 @@ Amplifier.prototype.setupWebsocket = function(options) {
 
 		};
 
+		// Watch the audio model for changes + send down to client 
 		_.each(audioModel, function(item){
 
 			watch(item, function(prop, action, newValue, oldValue) {
@@ -539,10 +450,6 @@ Amplifier.prototype.setupWebsocket = function(options) {
 					if(error) console.error("Watch Audio", error); 
 				});
 
-				if (item.key === "transpose") {
-					item.value = false; 
-				} 
-			
 			}); 
 
 		});
@@ -574,27 +481,32 @@ Amplifier.prototype.setupOSC = function(options) {
 
 		var newMessage = {};
 
-		if (msg[0] == "/column") {
+		//console.log(msg, rinfo);
 
-			newMessage.group = msg[1];
+		if (msg[0] == "/column" && msg[2] == 1) {
 
-			if (msg[2] == 1) {
-				newMessage.event = "touchdown"; 
-			} else {
-				newMessage.event = "touchup"; 
+			if (!memeCooldown && !memeMode) {
+
+				var eV = {
+					audioModel: {
+						meme: true
+					}
+				}; 
+
+				var ws = myAmplifier.clientList[0].connection;
+
+				ws.send(JSON.stringify({event: eV, name: "audio"}), function(error){
+					if(error) console.error("Audio/Meme", error); 
+				});
+
+				memeMode = true; 
+
 			}
-
-			newMessage.sensorPin = 5; 
-
-			//console.log(msg, rinfo);
-			//console.log(newMessage);
-
-			myAmplifier.handleTouches(newMessage); 
-
 
 		} else {
 
-			newMessage.group = msg[1];
+			newMessage.group = galileoPanelMap[msg[1]];
+
 			newMessage.sensorPin = msg[2]; 
 
 			if (msg[3] == 1) {
@@ -602,9 +514,6 @@ Amplifier.prototype.setupOSC = function(options) {
 			} else {
 				newMessage.event = "touchup"; 
 			}
-
-			//console.log(msg, rinfo);
-			console.log(newMessage);
 
 			myAmplifier.handleTouches(newMessage); 
 

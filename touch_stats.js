@@ -18,7 +18,7 @@ var touchStatistics = {
 
 	panelActivity: [0, 0, 0, 0], 
 
-	panelLastPins: [-1, -1, -1, -1], 
+	panelLastPins: [0, 0, 0, 0], 
 
 	//  Inter-onset duration 
 	computeMeanInterOnsetDurations: function() {

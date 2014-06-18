@@ -6,7 +6,7 @@ var audioModel = {
 		instrument: ""
 	},
 	tempo: {
-		value: 105, 
+		value: 60, 
 		key: "tempo",
 		wait: true
 	}, 
